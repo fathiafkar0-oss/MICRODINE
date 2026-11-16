@@ -35,4 +35,19 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Payment Gateway (Modul F)
+    |--------------------------------------------------------------------------
+    |
+    | driver: 'simulated' (default, demo offline) atau 'midtrans' (sandbox QRIS).
+    | Lihat ARCHITECTURE.md Bab 8 & API_CONTRACT.md Bab 5.1.
+    |
+    */
+    'midtrans' => [
+        'driver' => env('PAYMENT_GATEWAY_DRIVER', 'simulated'),
+        'server_key' => env('MIDTRANS_SERVER_KEY', ''),
+        'merchant_id' => env('MIDTRANS_MERCHANT_ID', ''),
+    ],
+
 ];

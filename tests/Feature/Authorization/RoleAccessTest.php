@@ -3,6 +3,9 @@
 namespace Tests\Feature\Authorization;
 
 use App\Enums\UserRole;
+use App\Models\DiningTable;
+use App\Models\Order;
+use App\Models\TableSession;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -79,6 +82,13 @@ class RoleAccessTest extends TestCase
 
     public function test_customer_routes_remain_public(): void
     {
+        // Modul C-G membuat halaman pelanggan membaca data sungguhan, jadi
+        // meja & pesanan contoh perlu ada dulu agar rute publik bisa diuji
+        // tanpa login (lihat RoleAccessTest asli T-014).
+        $table = DiningTable::factory()->create(['number' => '07']);
+        $session = TableSession::factory()->for($table, 'diningTable')->create();
+        Order::factory()->for($session, 'tableSession')->create(['daily_queue_number' => 'A-024']);
+
         $this->get('/')->assertOk();
         $this->get('/meja/07')->assertOk();
         $this->get('/meja/07/keranjang')->assertOk();

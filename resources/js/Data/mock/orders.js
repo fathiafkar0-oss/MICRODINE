@@ -14,8 +14,11 @@ function item(menuId, qty, note = '') {
 /**
  * Pesanan aktif hari ini. `minutesAgo` = umur pesanan (dipakai untuk label "8 mnt").
  * source: 'qr' (pelanggan scan QR) | 'kasir' (pesanan manual via barcode meja)
+ * sequence: urutan pesanan dalam satu sesi meja (1 = pesanan pertama, 2+ = pesanan tambahan).
+ *           Tidak ditulis = 1. Backend: dihitung dari orders.table_session_id.
  */
 export const orders = [
+    { code: 'A-028', table: '04', customer: 'Dewi', source: 'qr', method: 'qris', status: 'diproses', sequence: 2, minutesAgo: 2, time: '12:10', paidAt: '12:10', items: [item('M-016', 2)] },
     { code: 'A-027', table: '08', customer: 'Sinta', source: 'qr', method: 'tunai', status: 'menunggu_bayar', minutesAgo: 1, time: '12:11', items: [item('M-012', 1), item('M-017', 1)] },
     { code: 'A-026', table: '03', customer: 'Budi', source: 'kasir', method: 'tunai', status: 'menunggu_bayar', minutesAgo: 4, time: '12:08', items: [item('M-011', 2), item('M-016', 1)] },
     { code: 'A-025', table: '12', customer: 'Rara', source: 'qr', method: 'tunai', status: 'menunggu_bayar', minutesAgo: 6, time: '12:06', items: [item('M-013', 1)] },

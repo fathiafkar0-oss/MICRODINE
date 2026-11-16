@@ -25,6 +25,9 @@ export const TABLE_STATUS = {
 
 export const PAYMENT_METHOD_LABEL = { qris: 'QRIS', tunai: 'Tunai' };
 
+/** Pesanan ke-2 dst. dalam satu sesi meja (pelanggan menambah pesanan setelah membayar pesanan pertama). */
+export const isAddition = (order) => (order?.sequence ?? 1) > 1;
+
 /** Kelas warna per nada status. Teks label selalu ikut ditampilkan. */
 export const TONE_CLASS = {
     warn: 'bg-warn-tint text-warn',

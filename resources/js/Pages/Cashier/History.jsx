@@ -17,7 +17,7 @@ import OrderDetailPanel from '@/Pages/Cashier/Partials/OrderDetailPanel';
 import { cx } from '@/Utils/classNames';
 import { countItems } from '@/Utils/formatCurrency';
 import { formatLongDate } from '@/Utils/formatDate';
-import { isPaid, ORDER_STATUS, PAYMENT_METHOD_LABEL } from '@/Utils/status';
+import { isAddition, isPaid, ORDER_STATUS, PAYMENT_METHOD_LABEL } from '@/Utils/status';
 
 const PER_PAGE = 8;
 const STATUS_FILTERS = [
@@ -109,7 +109,10 @@ export default function CashierHistory({ orders = [...mockOrders, ...mockPastOrd
                                 </TableCell>
                                 <TableCell>
                                     <p className="font-semibold">Meja {order.table}</p>
-                                    <p className="text-xs text-faint">{order.source === 'qr' ? 'QR Pelanggan' : 'Kasir (manual)'}</p>
+                                    <p className="text-xs text-faint">
+                                        {order.source === 'qr' ? 'QR Pelanggan' : 'Kasir (manual)'}
+                                        {isAddition(order) && <span className="font-semibold text-warn"> · Tambahan</span>}
+                                    </p>
                                 </TableCell>
                                 <TableCell>{countItems(order.items)}</TableCell>
                                 <TableCell className="font-semibold">{format(bill(order.items).total)}</TableCell>

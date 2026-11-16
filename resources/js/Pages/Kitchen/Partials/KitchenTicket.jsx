@@ -1,8 +1,9 @@
 import { CircleCheck, Clock } from 'lucide-react';
 
-import { TableChip } from '@/Components/UI/Badge';
+import Badge, { TableChip } from '@/Components/UI/Badge';
 import { cx } from '@/Utils/classNames';
 import { countItems } from '@/Utils/formatCurrency';
+import { isAddition } from '@/Utils/status';
 
 /** Batas menit sebelum tiket ditandai "lama" (garis merah). */
 export const LATE_AFTER_MINUTES = 15;
@@ -23,6 +24,11 @@ export default function KitchenTicket({ order, onDone }) {
                     {order.minutesAgo} mnt{late && ' · lama'}
                 </span>
             </div>
+            {isAddition(order) && (
+                <Badge tone="gold" className="mt-2 w-fit">
+                    Tambahan · antar ke meja yang sama
+                </Badge>
+            )}
             <p className="mt-1 font-bold text-soft">
                 {order.customer} · {countItems(order.items)} item
             </p>

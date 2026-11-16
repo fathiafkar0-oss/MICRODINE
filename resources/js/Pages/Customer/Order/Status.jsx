@@ -8,18 +8,23 @@ import { restaurant as mockRestaurant } from '@/Data/mock/restaurant';
 import useCurrency from '@/Hooks/useCurrency';
 import CustomerLayout, { TablePill } from '@/Layouts/CustomerLayout';
 import { cx } from '@/Utils/classNames';
-import { resolveOrder } from '@/Utils/orderStorage';
-import { PAYMENT_METHOD_LABEL } from '@/Utils/status';
+import SessionOrders from '@/Pages/Customer/Order/Partials/SessionOrders';
+import { resolveOrder, sessionOrders } from '@/Utils/orderStorage';
+import { isAddition, PAYMENT_METHOD_LABEL } from '@/Utils/status';
 
 /**
  * Pelacak pesanan setelah lunas: diterima -> dimasak -> siap disajikan.
  * Route: GET /pesanan/{code}
- * Backend: kirim props `order`; status berubah real-time lewat event WebSocket (Laravel Reverb).
+ * Backend: kirim props `order` & `sessionOrders` (semua pesanan di sesi meja ini);
+ * status berubah real-time lewat event WebSocket (Laravel Reverb).
  */
-export default function OrderStatus({ code = 'A-024', order: orderProp, restaurant = mockRestaurant }) {
+export default function OrderStatus({ code = 'A-024', order: orderProp, sessionOrders: sessionProp, restaurant = mockRestaurant }) {
     const order = useMemo(() => resolveOrder(code, orderProp), [code, orderProp]);
+    const tableOrders = useMemo(() => sessionProp ?? sessionOrders(order.table), [sessionProp, order.table]);
     const { format, bill } = useCurrency(restaurant);
     const { total } = bill(order.items);
+    const totalOf = (item) => bill(item.items).total;
+    const session = <SessionOrders table={order.table} orders={tableOrders} currentCode={order.code} totalOf={totalOf} format={format} />;
 
     if (order.status === 'menunggu_bayar') {
         return (
@@ -34,6 +39,7 @@ export default function OrderStatus({ code = 'A-024', order: orderProp, restaura
                         Bayar Sekarang
                     </Button>
                 </Card>
+                <div className="mt-4">{session}</div>
             </CustomerLayout>
         );
     }
@@ -65,7 +71,7 @@ export default function OrderStatus({ code = 'A-024', order: orderProp, restaura
             }
             bottom={
                 <Button href={`/meja/${order.table}`} size="lg" block>
-                    Pesan Menu Lagi
+                    Tambah Pesanan
                 </Button>
             }
         >
@@ -97,7 +103,10 @@ export default function OrderStatus({ code = 'A-024', order: orderProp, restaura
 
                 <Card variant="plain">
                     <div className="mb-3 flex items-center justify-between">
-                        <h2 className="text-sm font-bold">Detail pesanan</h2>
+                        <h2 className="text-sm font-bold">
+                            Detail pesanan {order.code}
+                            {isAddition(order) && <span className="ml-1.5 font-semibold text-warn">· tambahan</span>}
+                        </h2>
                         <OrderStatusBadge status={order.status} />
                     </div>
                     <ul className="space-y-2 text-sm">
@@ -119,7 +128,12 @@ export default function OrderStatus({ code = 'A-024', order: orderProp, restaura
                     </div>
                 </Card>
 
+                {session}
+
                 <p className="text-center text-xs text-faint">
+                    Mau tambah menu? Tekan <strong className="text-ink">Tambah Pesanan</strong>. Tambahan dibayar terpisah dan diantar ke meja yang sama.
+                </p>
+                <p className="-mt-2 text-center text-xs text-faint">
                     Ada kendala? Sebutkan nomor antrean <strong className="text-ink">{order.code}</strong> ke kasir.
                 </p>
             </div>

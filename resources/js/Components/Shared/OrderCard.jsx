@@ -1,9 +1,9 @@
 import { Clock, QrCode } from 'lucide-react';
 
-import { TableChip } from '@/Components/UI/Badge';
+import Badge, { TableChip } from '@/Components/UI/Badge';
 import { cx } from '@/Utils/classNames';
 import { calculateBill, countItems, formatCurrency } from '@/Utils/formatCurrency';
-import { PAYMENT_METHOD_LABEL } from '@/Utils/status';
+import { isAddition, PAYMENT_METHOD_LABEL } from '@/Utils/status';
 
 /** Kartu pesanan di antrean kasir. `action` diisi tombol sesuai kolom. */
 export default function OrderCard({ order, taxRate = 0, action, className = '' }) {
@@ -15,6 +15,11 @@ export default function OrderCard({ order, taxRate = 0, action, className = '' }
                 <div className="flex items-center gap-2">
                     <span className="text-[17px] font-extrabold text-navy">{order.code}</span>
                     <TableChip number={order.table} />
+                    {isAddition(order) && (
+                        <Badge tone="gold" className="px-2 py-0.5 text-[11px]">
+                            Tambahan
+                        </Badge>
+                    )}
                 </div>
                 <span className="inline-flex items-center gap-1 text-xs text-faint">
                     <Clock className="h-3.5 w-3.5" aria-hidden="true" />

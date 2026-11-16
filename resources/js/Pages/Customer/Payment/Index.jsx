@@ -13,7 +13,7 @@ import useCurrency from '@/Hooks/useCurrency';
 import CustomerLayout from '@/Layouts/CustomerLayout';
 import { cx } from '@/Utils/classNames';
 import { formatTime } from '@/Utils/formatDate';
-import { resolveOrder, saveLastOrder } from '@/Utils/orderStorage';
+import { resolveOrder, saveOrder } from '@/Utils/orderStorage';
 
 /**
  * Menunggu pembayaran: QRIS (QR + hitung mundur) atau nomor antrean untuk bayar tunai di kasir.
@@ -21,7 +21,7 @@ import { resolveOrder, saveLastOrder } from '@/Utils/orderStorage';
  * Backend: QR diisi string QRIS dari payment gateway (sandbox). Status lunas datang lewat
  * webhook, lalu dikirim ke browser pelanggan via WebSocket -> redirect ke /pesanan/{code}.
  */
-export default function PaymentIndex({ code = 'A-028', order: orderProp, restaurant = mockRestaurant }) {
+export default function PaymentIndex({ code = 'A-029', order: orderProp, restaurant = mockRestaurant }) {
     const initial = useMemo(() => ({ ...resolveOrder(code, orderProp), status: 'menunggu_bayar' }), [code, orderProp]);
     const [order, setOrder] = useState(initial);
     const { format, bill } = useCurrency(restaurant);
@@ -32,12 +32,12 @@ export default function PaymentIndex({ code = 'A-028', order: orderProp, restaur
     const switchMethod = (method) => {
         const next = { ...order, method };
         setOrder(next);
-        saveLastOrder(next);
+        saveOrder(next);
     };
 
     // Mode demo: menggantikan notifikasi webhook dari payment gateway sandbox.
     const simulatePaid = () => {
-        saveLastOrder({ ...order, status: 'diproses', paidAt: formatTime() });
+        saveOrder({ ...order, status: 'diproses', paidAt: formatTime() });
         toast.success('Pembayaran diterima. Pesanan masuk ke dapur.');
         router.visit(`/pesanan/${order.code}`);
     };

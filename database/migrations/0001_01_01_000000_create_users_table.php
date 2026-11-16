@@ -11,20 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Staf MICRODINE: login memakai `username`, bukan email.
+        // Lihat ARCHITECTURE.md Bab 3.2 (Tabel 1).
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
+            $table->string('name', 100);
+            $table->string('username', 50)->unique();
             $table->string('password');
-            $table->rememberToken();
-            $table->timestamps();
-        });
-
-        Schema::create('password_reset_tokens', function (Blueprint $table) {
-            $table->string('email')->primary();
-            $table->string('token');
-            $table->timestamp('created_at')->nullable();
+            $table->string('role', 20);
+            $table->boolean('is_active')->default(true);
+            $table->timestampsTz();
         });
 
         Schema::create('sessions', function (Blueprint $table) {
@@ -42,8 +38,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
-        Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
+        Schema::dropIfExists('users');
     }
 };

@@ -105,26 +105,26 @@ export default function CashierDashboard({ orders: initialOrders = mockOrders, r
                 }
             />
 
-            <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+            <div className="stagger grid grid-cols-2 gap-3 xl:grid-cols-4">
                 <StatCard icon={Timer} label="Menunggu bayar" value={countOf('menunggu_bayar')} tone="gold" highlight={countOf('menunggu_bayar') > 0} />
                 <StatCard icon={ChefHat} label="Sedang diproses" value={countOf('diproses')} />
                 <StatCard icon={CircleCheck} label="Selesai hari ini" value={stats.doneToday + countOf('selesai')} tone="success" />
                 <StatCard icon={Wallet} label="Omzet shift ini" value={format(stats.shiftOmzet)} />
             </div>
 
-            <div className="mt-5 grid gap-4 lg:grid-cols-3">
+            <div className="stagger mt-6 grid gap-4 lg:grid-cols-3">
                 {COLUMNS.map((column) => {
                     const list = byStatus(column.status);
                     return (
-                        <section key={column.status} className="flex flex-col rounded-[20px] border border-navy/70 bg-panel/60 p-3" aria-label={column.title}>
+                        <section key={column.status} className="flex flex-col rounded-[24px] border border-line bg-raised/70 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]" aria-label={column.title}>
                             <header className="mb-3 flex items-center justify-between px-1.5 pt-1">
-                                <h2 className="flex items-center gap-2 text-[15px] font-bold text-navy">
+                                <h2 className="flex items-center gap-2 font-display text-xl font-semibold text-navy">
                                     <span className={cx('h-2 w-2 rounded-full', TONE_DOT[column.tone])} aria-hidden="true" />
                                     {column.title}
                                 </h2>
-                                <span className="rounded-full bg-info-tint px-2 py-0.5 text-xs font-bold text-navy">{list.length}</span>
+                                <span className="grid h-6 min-w-6 place-items-center rounded-full bg-navy px-1.5 text-xs font-bold text-white tabular-nums">{list.length}</span>
                             </header>
-                            <div className="flex flex-col gap-3">
+                            <div className="stagger flex flex-col gap-3">
                                 {list.length === 0 && <p className="rounded-2xl border border-dashed border-line-strong px-4 py-8 text-center text-sm text-faint">Belum ada pesanan</p>}
                                 {list.map((order) => (
                                     <OrderCard key={order.code} order={order} taxRate={taxRate} action={actionFor(order)} />

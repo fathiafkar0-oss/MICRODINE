@@ -41,7 +41,7 @@ export default function AdminSettings({ restaurant = mockRestaurant, staff = Obj
                     }
                 />
 
-                <div className="grid gap-4 xl:grid-cols-2">
+                <div className="stagger grid gap-4 xl:grid-cols-2">
                     <Card>
                         <CardHeader icon={Store} title="Identitas restoran" />
                         <Input label="Nama restoran" value={form.name} onValueChange={set('name')} hint="Tampil di halaman menu pelanggan dan struk." />

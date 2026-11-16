@@ -49,14 +49,14 @@ export default function OrderStatus({ code = 'A-024', order: orderProp, restaura
         <CustomerLayout
             title={done ? 'Pesanan siap' : 'Pesanan sedang dimasak'}
             header={
-                <header className="bg-navy px-5 pb-12 pt-6 text-white">
+                <header className="border-b border-gold/25 bg-gradient-to-br from-navy to-navy-deep px-5 pb-12 pt-6 text-white">
                     <div className="flex items-start justify-between">
-                        <span className="grid h-14 w-14 place-items-center rounded-2xl bg-panel text-navy">
+                        <span className="grid h-14 w-14 place-items-center rounded-[18px] border border-gold/40 bg-white/[0.06] text-gold">
                             <ChefHat className="h-7 w-7" aria-hidden="true" />
                         </span>
                         <TablePill number={order.table} />
                     </div>
-                    <h1 className="mt-5 text-[28px] font-extrabold leading-tight">{done ? 'Pesanan siap disajikan' : 'Pesanan sedang dimasak'}</h1>
+                    <h1 className="mt-5 animate-page-in font-display text-[2.3rem] font-semibold leading-[1.05]">{done ? 'Pesanan siap disajikan' : 'Pesanan sedang dimasak'}</h1>
                     <p className="mt-2 flex items-center gap-2 text-sm text-white/75">
                         <Clock className="h-4 w-4" aria-hidden="true" />
                         {done ? 'Pelayan sedang mengantar ke meja Anda' : 'Estimasi siap 10–15 menit'} · Antrean {order.code}
@@ -69,16 +69,16 @@ export default function OrderStatus({ code = 'A-024', order: orderProp, restaura
                 </Button>
             }
         >
-            <div className="-mt-7 space-y-4 pb-4">
+            <div className="stagger -mt-7 space-y-4 pb-4">
                 <Card variant="plain">
-                    <ol className="space-y-4">
+                    <ol className="stagger space-y-4">
                         {timeline.map((step) => (
                             <li key={step.label} className="flex items-start gap-3">
                                 <span
                                     className={cx(
                                         'grid h-7 w-7 shrink-0 place-items-center rounded-full',
                                         step.state === 'done' && 'bg-success text-white',
-                                        step.state === 'current' && 'bg-gold',
+                                        step.state === 'current' && 'animate-soft-pulse bg-gold',
                                         step.state === 'todo' && 'border-2 border-line-strong',
                                     )}
                                     aria-hidden="true"

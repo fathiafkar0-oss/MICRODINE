@@ -80,7 +80,7 @@ export default function PaymentIndex({ code = 'A-028', order: orderProp, restaur
                 )
             }
         >
-            <div className="space-y-4 pb-4">
+            <div className="stagger space-y-4 pb-4">
                 <Card variant="plain">
                     <div className="flex items-start justify-between gap-3">
                         <div>

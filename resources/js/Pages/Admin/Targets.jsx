@@ -61,8 +61,8 @@ export default function AdminTargets({ salesTarget = mockSalesTarget }) {
                 }
             />
 
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[1.5fr_1fr_1fr_1fr]">
-                <div className="rounded-[18px] bg-navy p-4 text-white">
+            <div className="stagger grid gap-3 md:grid-cols-2 xl:grid-cols-[1.5fr_1fr_1fr_1fr]">
+                <div className="rounded-[20px] bg-gradient-to-br from-navy to-navy-deep p-4 text-white shadow-[var(--shadow-lift)]">
                     <div className="flex items-center justify-between gap-2">
                         <p className="text-sm text-white/75">Realisasi omzet bulan ini</p>
                         <span className="rounded-full bg-gold-soft/20 px-2.5 py-1 text-xs font-bold text-gold-soft">{formatPercent(progress, 1)} dari target</span>
@@ -137,7 +137,7 @@ export default function AdminTargets({ salesTarget = mockSalesTarget }) {
 
                 <Card className="flex flex-col">
                     <CardHeader title="Target mingguan" className="mb-2" />
-                    <ul className="flex-1">
+                    <ul className="stagger flex-1">
                         {stats.weeks.map((week) => {
                             const ratio = week.value / week.target;
                             const state = WEEK_STATE[week.state];
@@ -177,14 +177,14 @@ export default function AdminTargets({ salesTarget = mockSalesTarget }) {
 function ProgressBar({ ratio, className, barClass }) {
     return (
         <div className={cx('rounded-full', className)}>
-            <div className={cx('h-full rounded-full', barClass)} style={{ width: `${Math.min(ratio, 1) * 100}%` }} />
+            <div className={cx('h-full origin-left animate-grow-x rounded-full [animation-delay:250ms]', barClass)} style={{ width: `${Math.min(ratio, 1) * 100}%` }} />
         </div>
     );
 }
 
 function Tile({ label, value, hint, tone = 'text-navy' }) {
     return (
-        <div className="rounded-[18px] border border-line bg-panel p-4">
+        <div className="rounded-[20px] border border-line bg-panel p-4 shadow-[var(--shadow-soft)]">
             <p className="text-sm text-faint">{label}</p>
             <p className={cx('mt-1 text-2xl font-extrabold', tone)}>{value}</p>
             <div className="mt-1 text-xs text-faint">{hint}</div>

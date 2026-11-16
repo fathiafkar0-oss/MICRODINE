@@ -25,7 +25,7 @@ export default function KitchenDashboard({ orders: initial = mockOrders.filter((
     };
 
     const summary = (
-        <div className="grid gap-3 text-ink sm:grid-cols-2 lg:w-1/2">
+        <div className="stagger grid gap-3 text-ink sm:grid-cols-2 lg:w-1/2">
             <StatCard icon={Flame} tone="warn" label="Sedang diproses" value={orders.length} className="border-transparent" />
             <StatCard icon={CircleCheck} tone="success" label="Selesai hari ini" value={done} className="border-transparent" />
         </div>
@@ -34,7 +34,7 @@ export default function KitchenDashboard({ orders: initial = mockOrders.filter((
     return (
         <KitchenLayout summary={summary}>
             <div className="mb-4 flex items-center justify-between">
-                <h2 className="flex items-center gap-2 text-lg font-extrabold text-navy">
+                <h2 className="flex items-center gap-2 font-display text-2xl font-semibold text-navy">
                     <span className="h-2.5 w-2.5 rounded-full bg-info" aria-hidden="true" />
                     Diproses · urut dari yang terlama
                 </h2>
@@ -48,7 +48,7 @@ export default function KitchenDashboard({ orders: initial = mockOrders.filter((
                     <p className="mt-1 text-faint">Pesanan baru yang lunas akan muncul otomatis di sini.</p>
                 </div>
             ) : (
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+                <div className="stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
                     {sorted.map((order) => (
                         <KitchenTicket key={order.code} order={order} onDone={markDone} />
                     ))}

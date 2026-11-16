@@ -12,7 +12,7 @@ export default function KitchenTicket({ order, onDone }) {
     const late = order.minutesAgo >= LATE_AFTER_MINUTES;
 
     return (
-        <article className={cx('flex flex-col rounded-3xl border-2 bg-panel p-5', late ? 'border-crimson' : 'border-transparent')}>
+        <article className={cx('lift flex flex-col rounded-[24px] border-2 bg-panel p-5 shadow-[var(--shadow-soft)]', late ? 'border-crimson/70' : 'border-transparent')}>
             <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                     <span className="text-2xl font-extrabold text-navy">{order.code}</span>
@@ -42,7 +42,7 @@ export default function KitchenTicket({ order, onDone }) {
             <button
                 type="button"
                 onClick={() => onDone(order)}
-                className="mt-4 inline-flex h-14 items-center justify-center gap-2 rounded-full bg-gold text-base font-extrabold text-obsidian transition hover:bg-gold-hover active:scale-[0.98]"
+                className="mt-4 inline-flex h-14 items-center justify-center gap-2 rounded-[16px] bg-gold text-base font-extrabold text-obsidian shadow-[0_10px_22px_-12px_rgba(204,158,74,0.9)] transition hover:bg-gold-hover active:scale-[0.97]"
             >
                 <CircleCheck className="h-5 w-5" aria-hidden="true" />
                 Tandai Selesai

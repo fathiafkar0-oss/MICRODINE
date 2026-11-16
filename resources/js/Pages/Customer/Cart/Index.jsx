@@ -50,7 +50,7 @@ export default function CartIndex({ table = '07', restaurant = mockRestaurant, m
                 </Button>
             }
         >
-            <div className="space-y-3 pb-4">
+            <div className="stagger space-y-3 pb-4">
                 {cart.items.map((item) => (
                     <Card key={item.menuId} variant="plain" padding="md">
                         <div className="flex items-center gap-3">

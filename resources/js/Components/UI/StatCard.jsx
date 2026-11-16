@@ -11,15 +11,15 @@ export default function StatCard({ icon: Icon, label, value, hint, tone = 'neutr
     }[tone];
 
     return (
-        <div className={cx('flex items-center gap-3 rounded-2xl border bg-panel px-4 py-3.5', highlight ? 'border-gold' : 'border-line', className)}>
+        <div className={cx('flex items-center gap-3 rounded-[18px] border bg-panel px-4 py-3.5 shadow-[var(--shadow-soft)]', highlight ? 'border-gold/70 ring-1 ring-gold/20' : 'border-line', className)}>
             {Icon && (
-                <span className={cx('grid h-10 w-10 shrink-0 place-items-center rounded-xl', tile)}>
+                <span className={cx('hidden h-10 w-10 shrink-0 place-items-center rounded-[12px] sm:grid', tile)}>
                     <Icon className="h-5 w-5" aria-hidden="true" />
                 </span>
             )}
             <div className="min-w-0">
-                <p className="text-xs text-faint">{label}</p>
-                <p className="truncate text-lg font-extrabold text-navy">{value}</p>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-faint">{label}</p>
+                <p className="truncate text-lg font-extrabold tabular-nums text-navy">{value}</p>
                 {hint && <p className="text-xs text-faint">{hint}</p>}
             </div>
         </div>

@@ -33,21 +33,21 @@ export default function MenuIndex({ table = '07', session = { joined: false }, r
     return (
         <div className="min-h-dvh bg-canvas">
             <Head title={`Menu · Meja ${table}`} />
-            <div className="mx-auto w-full max-w-[480px] pb-32">
-                <header className="rounded-b-[24px] bg-navy px-5 pb-5 pt-6 text-white">
+            <div className="mx-auto w-full max-w-[480px] animate-page-fade pb-32">
+                <header className="rounded-b-[28px] border-b border-gold/25 bg-gradient-to-br from-navy to-navy-deep px-5 pb-5 pt-6 text-white shadow-[0_18px_40px_-24px_rgba(6,19,58,0.8)]">
                     <div className="flex items-start justify-between gap-3">
                         <div>
-                            <p className="text-xs font-bold tracking-[0.18em] text-gold-soft">MICRODINE</p>
-                            <p className="mt-0.5 text-xl font-extrabold">{restaurant.name}</p>
+                            <p className="text-[11px] font-semibold tracking-[0.24em] text-gold-soft">MICRODINE</p>
+                            <p className="mt-1 font-display text-[1.9rem] font-semibold leading-none">{restaurant.name}</p>
                         </div>
-                        <Link href="/pesanan/A-024" className="inline-flex h-9 items-center gap-1.5 rounded-full border border-white/30 px-3 text-[13px] font-semibold transition hover:bg-white/10">
+                        <Link href="/pesanan/A-024" className="inline-flex h-9 items-center gap-1.5 rounded-full border border-white/25 bg-white/5 px-3 text-[13px] font-semibold transition hover:bg-white/10 active:scale-95">
                             <ListOrdered className="h-4 w-4" aria-hidden="true" />
                             Pesanan saya
                         </Link>
                     </div>
 
-                    <div className="mt-4 flex items-center gap-3 rounded-2xl bg-white/10 p-3">
-                        <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-gold text-obsidian">
+                    <div className="mt-5 flex items-center gap-3 rounded-[18px] border border-white/10 bg-white/[0.07] p-3">
+                        <div className="grid h-12 w-12 shrink-0 place-items-center rounded-[13px] bg-gold text-obsidian shadow-[0_8px_18px_-10px_rgba(204,158,74,0.9)]">
                             <span className="text-[10px] font-bold leading-none">MEJA</span>
                             <span className="text-xl font-extrabold leading-none">{table}</span>
                         </div>
@@ -68,14 +68,14 @@ export default function MenuIndex({ table = '07', session = { joined: false }, r
                     <FilterChips options={['Semua', ...categories]} value={category} onChange={setCategory} label="Kategori menu" scrollable className="-mx-5 px-5" />
 
                     <div className="flex items-baseline justify-between">
-                        <h2 className="text-lg font-extrabold text-navy">{category === 'Semua' ? 'Semua menu' : category}</h2>
+                        <h2 className="font-display text-2xl font-semibold text-navy">{category === 'Semua' ? 'Semua menu' : category}</h2>
                         <span className="text-xs text-faint">{visible.length} menu</span>
                     </div>
 
                     {visible.length === 0 ? (
                         <p className="rounded-2xl bg-panel px-4 py-10 text-center text-sm text-soft">Menu tidak ditemukan. Coba kata lain atau pilih kategori Semua.</p>
                     ) : (
-                        <ul className="space-y-2.5">
+                        <ul className="stagger space-y-2.5">
                             {visible.map((menu) => (
                                 <MenuItem key={menu.id} menu={menu} qty={cart.qtyOf(menu.id)} onAdd={() => cart.add(menu)} onDecrease={() => cart.decrease(menu.id)} />
                             ))}
@@ -85,9 +85,9 @@ export default function MenuIndex({ table = '07', session = { joined: false }, r
             </div>
 
             {totalItems > 0 && (
-                <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-canvas/95 backdrop-blur">
+                <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line/70 bg-canvas/80 backdrop-blur-xl backdrop-saturate-150">
                     <div className="mx-auto flex w-full max-w-[480px] animate-slide-up px-4 pb-5 pt-3">
-                        <div className="flex flex-1 items-center justify-between gap-3 rounded-2xl bg-navy py-2 pl-4 pr-2 text-white">
+                        <div className="flex flex-1 items-center justify-between gap-3 rounded-[20px] bg-gradient-to-r from-navy to-navy-deep py-2 pl-4 pr-2 text-white shadow-[0_16px_32px_-16px_rgba(6,19,58,0.8)]">
                             <div className="flex items-center gap-3">
                                 <ShoppingBag className="h-5 w-5 text-white/75" aria-hidden="true" />
                                 <div>

@@ -46,7 +46,7 @@ export default function AdminDashboard({ dashboard = mockDashboard, menus = mock
                 }
             />
 
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="stagger grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 <Kpi label="Total Omzet" icon={CircleDollarSign} value={formatCurrency(today.omzet)} hint={`↗ +${formatPercent(today.omzetGrowth)} vs kemarin`} hintTone="text-success" />
                 <Kpi label="Total HPP" icon={Package} value={formatCurrency(today.hpp)} hint={`${formatPercent(today.hpp / today.omzet)} dari omzet`} />
                 <Kpi label="Laba Kotor" icon={TrendingUp} value={formatCurrency(profit)} valueTone="text-success" hint={`Margin ${formatPercent(profit / today.omzet)}`} hintTone="text-success" />
@@ -83,7 +83,7 @@ export default function AdminDashboard({ dashboard = mockDashboard, menus = mock
                     </dl>
                 </Card>
 
-                <div className="space-y-4">
+                <div className="stagger space-y-4">
                     <Card>
                         <CardHeader title="Metode pembayaran" className="mb-0" />
                         {[
@@ -101,7 +101,7 @@ export default function AdminDashboard({ dashboard = mockDashboard, menus = mock
                                     </span>
                                 </div>
                                 <div className="mt-2 h-2.5 rounded-full bg-raised">
-                                    <div className={cx('h-full rounded-full', color)} style={{ width: `${(value / paymentTotal) * 100}%` }} />
+                                    <div className={cx('h-full origin-left animate-grow-x rounded-full [animation-delay:300ms]', color)} style={{ width: `${(value / paymentTotal) * 100}%` }} />
                                 </div>
                             </div>
                         ))}
@@ -109,7 +109,7 @@ export default function AdminDashboard({ dashboard = mockDashboard, menus = mock
 
                     <Card>
                         <CardHeader title="Menu terlaris hari ini" className="mb-3" />
-                        <ul className="space-y-3">
+                        <ul className="stagger space-y-3">
                             {topMenus.map((row) => {
                                 const menu = menus.find((item) => item.id === row.menuId);
                                 return (
@@ -133,10 +133,10 @@ export default function AdminDashboard({ dashboard = mockDashboard, menus = mock
 
 function Kpi({ label, icon: Icon, value, hint, valueTone = 'text-navy', hintTone = 'text-faint' }) {
     return (
-        <Card padding="md" className="rounded-[18px]">
+        <Card padding="md" interactive className="rounded-[20px]">
             <div className="flex items-center justify-between">
                 <p className="text-xs font-semibold text-faint">{label}</p>
-                <span className="grid h-8 w-8 place-items-center rounded-lg bg-gold-tint text-warn">
+                <span className="grid h-8 w-8 place-items-center rounded-[10px] bg-gold-tint text-warn ring-1 ring-gold/20">
                     <Icon className="h-4 w-4" aria-hidden="true" />
                 </span>
             </div>

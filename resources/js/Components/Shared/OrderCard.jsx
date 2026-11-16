@@ -10,7 +10,7 @@ export default function OrderCard({ order, taxRate = 0, action, className = '' }
     const { total } = calculateBill(order.items, taxRate);
 
     return (
-        <article className={cx('rounded-2xl border border-line bg-panel p-4', className)}>
+        <article className={cx('lift rounded-[18px] border border-line bg-panel p-4 shadow-[var(--shadow-soft)]', className)}>
             <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                     <span className="text-[17px] font-extrabold text-navy">{order.code}</span>

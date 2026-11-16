@@ -17,7 +17,9 @@
  * - Latar halaman: bg-canvas · kartu: bg-panel + border-line
  * - Aksi utama: bg-gold text-obsidian (tombol pil) · aksi kedua: bg-navy text-white
  * - Status selalu memakai label teks, bukan warna saja (lihat Utils/status.js)
- * - font-display & font-script (serif) hanya untuk halaman awal; halaman aplikasi memakai font-sans
+ * - Judul (halaman, kartu, modal) memakai font-display (serif Cormorant) agar klasik & mewah;
+ *   isi, angka, dan tombol memakai font-sans agar mudah dibaca
+ * - Gerak memakai kurva iOS (--ease-ios): cepat di awal, mendarat lembut
  */
 @theme {
     --font-sans: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
@@ -27,38 +29,55 @@
     --color-navy: #0a1d4b;
     --color-navy-hover: #162c68;
     --color-navy-soft: #1c2f63;
+    --color-navy-deep: #06133a;
     --color-crimson: #9e0e18;
     --color-crimson-dark: #7e0b13;
     --color-gold: #cc9e4a;
     --color-gold-hover: #b98a35;
-    --color-gold-soft: #f2cf87;
-    --color-gold-tint: #faf0dc;
+    --color-gold-soft: #ecd29c;
+    --color-gold-tint: #f8eedb;
     --color-ivory: #f4e8db;
     --color-ivory-paper: #fdf8f2;
     --color-ivory-line: #e2d0be;
     --color-obsidian: #171721;
 
     /* Permukaan & teks */
-    --color-canvas: #f4e8db;
-    --color-panel: #fffcf7;
-    --color-raised: #f8efe4;
-    --color-line: #e9dccb;
-    --color-line-strong: #d3c1a8;
+    --color-canvas: #f5eee4;
+    --color-panel: #fffdf9;
+    --color-raised: #f7f0e6;
+    --color-line: #ebe0d1;
+    --color-line-strong: #d6c5ad;
     --color-ink: #171721;
     --color-soft: #474a59;
     --color-faint: #686b78;
 
     /* Status (selalu dipasangkan dengan label teks) */
-    --color-success: #1e6f48;
-    --color-success-tint: #e1f0e6;
+    --color-success: #23704b;
+    --color-success-tint: #e4efe5;
     --color-danger: #9e0e18;
-    --color-danger-tint: #f7e0e2;
-    --color-warn: #7a5410;
-    --color-warn-tint: #f6e7c9;
-    --color-info: #34446e;
-    --color-info-tint: #e6e9f1;
+    --color-danger-tint: #f6e3e1;
+    --color-warn: #86590f;
+    --color-warn-tint: #f6eacf;
+    --color-info: #2e3f6c;
+    --color-info-tint: #e7e9f0;
 
-    --radius-card: 16px;
+    /* Bayangan lembut ala iOS (warna navy, bukan hitam) */
+    --shadow-soft: 0 1px 2px rgba(10, 29, 75, 0.04), 0 8px 24px -14px rgba(10, 29, 75, 0.18);
+    --shadow-lift: 0 2px 4px rgba(10, 29, 75, 0.05), 0 18px 36px -16px rgba(10, 29, 75, 0.28);
+
+    --ease-ios: cubic-bezier(0.32, 0.72, 0, 1);
+
+    --radius-card: 22px;
+
+    /* Animasi halaman aplikasi */
+    --animate-page-in: page-in 520ms var(--ease-ios) backwards;
+    --animate-page-fade: fade-in 450ms ease-out both;
+    --animate-rise-in: page-in 560ms var(--ease-ios) backwards;
+    --animate-sheet-in: sheet-in 420ms var(--ease-ios) backwards;
+    --animate-grow-y: grow-y 900ms var(--ease-ios) both;
+    --animate-grow-x: grow-x 1100ms var(--ease-ios) both;
+    --animate-draw: draw 1400ms var(--ease-ios) both;
+    --animate-soft-pulse: soft-pulse 2s ease-in-out infinite;
 
     --animate-fade-in: fade-in 160ms ease-out;
     --animate-slide-up: slide-up 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -108,6 +127,67 @@
         }
     }
 
+    /* Dipakai dengan fill-mode `backwards` + diakhiri `transform: none`: setelah selesai animasi
+       melepas transform, sehingga efek hover (lift) dan elemen fixed (modal) di dalamnya tetap normal */
+    @keyframes page-in {
+        from {
+            opacity: 0;
+            transform: translateY(12px);
+        }
+        to {
+            opacity: 1;
+            transform: none;
+        }
+    }
+
+    @keyframes sheet-in {
+        from {
+            opacity: 0;
+            transform: translateY(28px) scale(0.98);
+        }
+        to {
+            opacity: 1;
+            transform: none;
+        }
+    }
+
+    @keyframes grow-y {
+        from {
+            transform: scaleY(0);
+        }
+        to {
+            transform: scaleY(1);
+        }
+    }
+
+    @keyframes grow-x {
+        from {
+            transform: scaleX(0);
+        }
+        to {
+            transform: scaleX(1);
+        }
+    }
+
+    @keyframes draw {
+        from {
+            stroke-dashoffset: 1;
+        }
+        to {
+            stroke-dashoffset: 0;
+        }
+    }
+
+    @keyframes soft-pulse {
+        0%,
+        100% {
+            box-shadow: 0 0 0 0 rgba(204, 158, 74, 0.45);
+        }
+        50% {
+            box-shadow: 0 0 0 8px rgba(204, 158, 74, 0);
+        }
+    }
+
     @keyframes pop-in {
         from {
             opacity: 0;
@@ -139,6 +219,11 @@
         letter-spacing: -0.01em;
     }
 
+    /* Cormorant memakai angka "kuno" (old-style) secara bawaan: paksa angka tegak agar "Meja 01" tidak terbaca "Meja o1" */
+    .font-display {
+        font-variant-numeric: lining-nums;
+    }
+
     button:not(:disabled),
     [role='button']:not(:disabled) {
         cursor: pointer;
@@ -151,6 +236,64 @@
 }
 
 /* Teks miring berhias (kicker "Selamat datang ..."), dipakai bersama font-display */
+/*
+ * Anak-anak elemen muncul bergantian (naik + memudar), mis. deretan kartu angka atau daftar menu.
+ * Pakai: <div className="stagger grid ..."> ... </div>
+ */
+@utility stagger {
+    & > * {
+        animation: var(--animate-rise-in);
+    }
+    & > *:nth-child(2) {
+        animation-delay: 60ms;
+    }
+    & > *:nth-child(3) {
+        animation-delay: 120ms;
+    }
+    & > *:nth-child(4) {
+        animation-delay: 180ms;
+    }
+    & > *:nth-child(5) {
+        animation-delay: 240ms;
+    }
+    & > *:nth-child(6) {
+        animation-delay: 300ms;
+    }
+    & > *:nth-child(7) {
+        animation-delay: 360ms;
+    }
+    & > *:nth-child(8) {
+        animation-delay: 420ms;
+    }
+    & > *:nth-child(9) {
+        animation-delay: 480ms;
+    }
+    & > *:nth-child(10) {
+        animation-delay: 540ms;
+    }
+    & > *:nth-child(11) {
+        animation-delay: 600ms;
+    }
+    & > *:nth-child(12) {
+        animation-delay: 660ms;
+    }
+    & > *:nth-child(n + 13) {
+        animation-delay: 720ms;
+    }
+}
+
+/* Kartu yang bisa diklik: naik sedikit + bayangan lebih dalam saat disentuh kursor */
+@utility lift {
+    transition:
+        transform 300ms var(--ease-ios),
+        box-shadow 300ms var(--ease-ios),
+        border-color 300ms var(--ease-ios);
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lift);
+    }
+}
+
 @utility font-script {
     font-family: var(--font-display);
     font-style: italic;

@@ -66,7 +66,7 @@ export default function CheckoutIndex({ table = '07', restaurant = mockRestauran
                     </div>
                 }
             >
-                <div className="space-y-4 pb-4">
+                <div className="stagger space-y-4 pb-4">
                     <Card variant="plain" padding="md">
                         <Input
                             label="Nama pemesan"

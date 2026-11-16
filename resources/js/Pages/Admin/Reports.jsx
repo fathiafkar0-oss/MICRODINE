@@ -102,7 +102,7 @@ export default function AdminReports({ orders = [...mockOrders, ...mockPastOrder
                 </Select>
             </div>
 
-            <div className="mt-4 grid grid-cols-2 gap-3 xl:grid-cols-4">
+            <div className="stagger mt-4 grid grid-cols-2 gap-3 xl:grid-cols-4">
                 <Summary label="Omzet periode" value={formatCurrency(totals.omzet)} />
                 <Summary label="Total HPP" value={formatCurrency(totals.hpp)} />
                 <Summary label="Laba kotor" value={formatCurrency(totals.profit)} tone="text-success" />
@@ -153,7 +153,7 @@ export default function AdminReports({ orders = [...mockOrders, ...mockPastOrder
 
 function Summary({ label, value, tone = 'text-navy' }) {
     return (
-        <div className="rounded-[18px] border border-navy/50 bg-panel px-4 py-3">
+        <div className="rounded-[18px] border border-line bg-panel px-4 py-3 shadow-[var(--shadow-soft)]">
             <p className="text-xs text-faint">{label}</p>
             <p className={cx('mt-0.5 text-xl font-extrabold', tone)}>{value}</p>
         </div>

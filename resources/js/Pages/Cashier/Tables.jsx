@@ -54,11 +54,11 @@ export default function CashierTables({ tables: tableProp, appUrl = typeof windo
                 }
             />
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="stagger grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {tables.map((table) => (
-                    <article key={table.number} className={cx('flex flex-col rounded-[18px] border bg-panel p-4', table.status === 'terisi' ? 'border-navy/70' : 'border-line')}>
+                    <article key={table.number} className={cx('lift flex flex-col rounded-[20px] border bg-panel p-4 shadow-[var(--shadow-soft)]', table.status === 'terisi' ? 'border-navy/40' : 'border-line')}>
                         <div className="flex items-center justify-between">
-                            <h2 className="text-lg font-extrabold text-navy">Meja {table.number}</h2>
+                            <h2 className="font-display text-2xl font-semibold text-navy">Meja {table.number}</h2>
                             <TableStatusBadge status={table.status} />
                         </div>
                         <p className="mt-1 flex items-center gap-1.5 text-xs text-faint">

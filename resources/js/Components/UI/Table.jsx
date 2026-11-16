@@ -25,7 +25,7 @@ export default function Table({ columns, minWidth = 'min-w-[720px]', empty, isEm
                             ))}
                         </tr>
                     </thead>
-                    <tbody>{children}</tbody>
+                    <tbody className="stagger">{children}</tbody>
                 </table>
             </div>
             {isEmpty && <p className="px-4 py-10 text-center text-sm text-faint">{empty ?? 'Belum ada data.'}</p>}

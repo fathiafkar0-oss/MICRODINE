@@ -32,7 +32,7 @@ export default function CashierLayout({ title, children }) {
             <Head title={title} />
             <Sidebar portal="Portal Kasir" sections={CASHIER_NAV} activeHref={activeHref} user={user} showKitchenShortcut />
             <Navbar portal="Portal Kasir" items={flattenNav(CASHIER_NAV)} activeHref={activeHref} />
-            <main className="mx-auto w-full max-w-[1400px] px-4 pb-28 pt-5 md:px-8 md:pt-8 lg:pb-10">{children}</main>
+            <main className="mx-auto w-full max-w-[1400px] animate-page-in px-4 pb-28 pt-5 md:px-8 md:pt-9 lg:pb-12">{children}</main>
         </div>
     );
 }

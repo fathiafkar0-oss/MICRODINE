@@ -62,7 +62,7 @@ export default function CashierHistory({ orders = [...mockOrders, ...mockPastOrd
         <CashierLayout title="Histori Pesanan">
             <PageHeader title="Histori Pesanan" subtitle={`${formatLongDate()} · semua pesanan dari kasir dan QR meja`} actions={<LiveBadge />} />
 
-            <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+            <div className="stagger grid grid-cols-2 gap-3 xl:grid-cols-4">
                 <SummaryTile label="Total pesanan" value={orders.length} hint={`${orders.filter((order) => order.source === 'qr').length} dari QR · ${orders.filter((order) => order.source === 'kasir').length} oleh kasir`} />
                 <SummaryTile label="Pembayaran lunas" value={format(sum(paid))} hint={`Tunai ${format(sum(paid.filter((order) => order.method === 'tunai')))}`} dark />
                 <SummaryTile label="Menunggu pembayaran" value={orders.filter((order) => order.status === 'menunggu_bayar').length} hint={`Batal otomatis ${restaurant.paymentDeadlineMinutes} menit`} tone="text-warn" />
@@ -138,7 +138,7 @@ export default function CashierHistory({ orders = [...mockOrders, ...mockPastOrd
 
 function SummaryTile({ label, value, hint, dark = false, tone = 'text-navy' }) {
     return (
-        <div className={cx('rounded-[18px] px-4 py-3.5', dark ? 'bg-navy text-white' : 'border border-line bg-panel')}>
+        <div className={cx('rounded-[18px] px-4 py-3.5 shadow-[var(--shadow-soft)]', dark ? 'bg-gradient-to-br from-navy to-navy-deep text-white' : 'border border-line bg-panel')}>
             <p className={cx('text-xs', dark ? 'text-white/70' : 'text-faint')}>{label}</p>
             <p className={cx('mt-1 text-xl font-extrabold', dark ? 'text-gold-soft' : tone)}>{value}</p>
             <p className={cx('mt-0.5 text-xs', dark ? 'text-white/70' : 'text-faint')}>{hint}</p>

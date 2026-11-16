@@ -83,7 +83,7 @@ export default function CashierOrders({ menus = mockMenus, categories = mockCate
             <div className="grid gap-5 xl:grid-cols-[1fr_380px]">
                 <div className="min-w-0 space-y-4">
                     <Card as="form" padding="md" onSubmit={submitScan} className="flex flex-wrap items-end gap-3">
-                        <span className="grid h-11 w-11 place-items-center rounded-xl bg-gold text-obsidian">
+                        <span className="grid h-11 w-11 place-items-center rounded-[13px] bg-gold text-obsidian shadow-[0_8px_18px_-10px_rgba(204,158,74,0.9)]">
                             <ScanBarcode className="h-5 w-5" aria-hidden="true" />
                         </span>
                         <Input
@@ -106,11 +106,11 @@ export default function CashierOrders({ menus = mockMenus, categories = mockCate
                         <SearchBar value={query} onChange={setQuery} placeholder="Cari menu..." label="Cari menu" className="ml-auto w-56" />
                     </div>
 
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 2xl:grid-cols-3">
+                    <div className="stagger grid grid-cols-1 gap-3 sm:grid-cols-2 2xl:grid-cols-3">
                         {visible.map((menu) => {
                             const qty = cart.qtyOf(menu.id);
                             return (
-                                <div key={menu.id} className={cx('flex items-center gap-3 rounded-2xl border bg-panel p-3', qty ? 'border-gold' : 'border-line', !menu.available && 'opacity-60')}>
+                                <div key={menu.id} className={cx('lift flex items-center gap-3 rounded-[18px] border bg-panel p-3 shadow-[var(--shadow-soft)]', qty ? 'border-gold ring-1 ring-gold/25' : 'border-line', !menu.available && 'opacity-60')}>
                                     <MenuThumb menu={menu} className="h-14 w-14 rounded-xl" />
                                     <div className="min-w-0 flex-1">
                                         <p className="truncate font-bold text-navy">{menu.name}</p>
@@ -133,7 +133,7 @@ export default function CashierOrders({ menus = mockMenus, categories = mockCate
 
                 <Card as="aside" className="h-fit xl:sticky xl:top-6">
                     <div className="flex items-center justify-between">
-                        <h2 className="text-lg font-extrabold text-navy">Ringkasan</h2>
+                        <h2 className="font-display text-2xl font-semibold text-navy">Ringkasan</h2>
                         <span className={cx('rounded-full px-3 py-1 text-sm font-bold', table ? 'bg-gold-soft text-obsidian' : 'bg-raised text-faint')}>{table ? `Meja ${table}` : 'Meja belum dipilih'}</span>
                     </div>
 

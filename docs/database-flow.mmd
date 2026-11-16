@@ -1,0 +1,51 @@
+flowchart TD
+    subgraph INITIATION["1. Inisiasi Sesi Meja (Row Locking)"]
+        ScanQR["Scan QR Meja / Input Barcode Meja"] --> ResolveTable["SELECT dining_tables WHERE qr_token/barcode"]
+        ResolveTable --> CheckSession{"Ada Sesi Aktif?\n(status = 'active')"}
+        CheckSession -- Ya --> JoinSession["Gabung Sesi Aktif Yang Ada\n(table_sessions.id)"]
+        CheckSession -- Tidak --> LockTable["SELECT ... FOR UPDATE\nINSERT INTO table_sessions (status='active')\n(Guaranteed by Partial Unique Index)"]
+        LockTable --> SessionReady["Sesi Meja Aktif Siap"]
+        JoinSession --> SessionReady
+    end
+
+    subgraph ORDER_CREATION["2. Pembuatan Pesanan & Snapshot Finansial"]
+        SessionReady --> CartCheckout["Pelanggan / Kasir Konfirmasi Pesanan"]
+        CartCheckout --> ReadMasterMenu["SELECT menu_items WHERE id IN (...)"]
+        ReadMasterMenu --> InsertOrder["INSERT INTO orders\n(payment_status='pending',\nkitchen_status='queued',\nsource='qr'|'manual')"]
+        InsertOrder --> InsertItems["INSERT INTO order_items\nSnapshot: unit_price_snapshot = menu.price\nSnapshot: unit_hpp_snapshot = menu.hpp\n(IMMUTABLE - Tidak berubah selamanya)"]
+        InsertItems --> CreatePayment["INSERT INTO payments\n(status='pending', provider='qris'|'cash',\nidempotency_key=UUID)"]
+    end
+
+    subgraph PAYMENT_FLOW["3. Validasi Pembayaran (Pay-First Gate)"]
+        CreatePayment --> PayMethod{"Metode Pembayaran?"}
+        
+        PayMethod -- QRIS --> MidtransWebhook["Terima Webhook Midtrans"]
+        MidtransWebhook --> VerifySign{"Signature SHA-512\n& Idempotency Valid?"}
+        VerifySign -- Tidak --> RejectWebhook["Tolak HTTP 403 / Abaikan"]
+        VerifySign -- Ya --> UpdatePaidQRIS["UPDATE payments SET status='paid'\nUPDATE orders SET payment_status='paid', paid_at=NOW()"]
+        
+        PayMethod -- Tunai --> CashierModal["Kasir Klik 'Terima Tunai'\nInput Uang Diterima >= Total"]
+        CashierModal --> UpdatePaidCash["UPDATE payments SET status='paid'\nUPDATE orders SET payment_status='paid', paid_at=NOW()"]
+        
+        UpdatePaidQRIS --> LogStatus["INSERT INTO order_status_logs\n(from='pending', to='paid')"]
+        UpdatePaidCash --> LogStatus
+    end
+
+    subgraph KITCHEN_DISPATCH["4. Distribusi Antrean Dapur & Real-Time Sync"]
+        LogStatus --> AfterCommit["DB::afterCommit Callback\n(Data Permanen di PostgreSQL)"]
+        AfterCommit --> TriggerReverb["Broadcast via Laravel Reverb WebSockets"]
+        TriggerReverb --> KDSVisible["Muncul di KDS Dapur (Hanya Yang 'paid')\n& Kanban Kasir Kolom 'Diproses'"]
+        KDSVisible --> CookProgress["Koki Update Status: cooking -> done"]
+        CookProgress --> ServeProgress["Kasir Update: done -> served"]
+        ServeProgress --> OrderCompleted["Pesanan Selesai Disajikan"]
+    end
+
+    subgraph REPORTING_CLOSE["5. Agregasi Finansial & Penutupan Meja"]
+        OrderCompleted --> ReportQuery["Kueri Laporan Keuangan Admin\nSELECT ... FROM orders\nWHERE payment_status = 'paid'\n(Memanfaatkan Index: idx_orders_reporting)"]
+        ReportQuery --> CalcMetrics["Kalkulasi Presisi:\nOmzet = SUM(total)\nHPP = SUM(order_items.subtotal_hpp)\nLaba Bersih = Omzet - HPP"]
+        
+        OrderCompleted --> CashierClose["Kasir Menutup Sesi Meja"]
+        CashierClose --> CheckUnserved{"Ada pesanan belum 'served'?"}
+        CheckUnserved -- Ya --> WarnCashier["Modal Dialog Peringatan"]
+        CheckUnserved -- Tidak --> CloseSession["UPDATE table_sessions\nSET status='closed', closed_at=NOW()\nMeja Kembali Hijau 'Tersedia'"]
+    end

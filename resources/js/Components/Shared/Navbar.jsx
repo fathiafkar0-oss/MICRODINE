@@ -22,7 +22,7 @@ export default function Navbar({ portal, items, activeHref }) {
 
     return (
         <>
-            <header className="sticky top-0 z-30 flex items-center justify-between border-b border-gold/20 bg-gradient-to-r from-navy to-navy-deep px-4 py-3 text-white lg:hidden">
+            <header className="sticky top-0 z-30 flex print:hidden items-center justify-between border-b border-gold/20 bg-gradient-to-r from-navy to-navy-deep px-4 py-3 text-white lg:hidden">
                 <Logo subtitle={portal} />
                 <LogoutLink className="bg-white/10 text-white hover:bg-white/20" />
             </header>
@@ -30,7 +30,7 @@ export default function Navbar({ portal, items, activeHref }) {
             <nav
                 aria-label="Menu utama"
                 className={cx(
-                    'fixed inset-x-0 bottom-0 z-40 gap-1 border-t border-line/80 bg-panel/85 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] backdrop-blur-xl backdrop-saturate-150 lg:hidden',
+                    'fixed inset-x-0 bottom-0 z-40 gap-1 print:!hidden border-t border-line/80 bg-panel/85 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] backdrop-blur-xl backdrop-saturate-150 lg:hidden',
                     fits ? 'grid auto-cols-fr grid-flow-col' : 'scrollbar-none flex overflow-x-auto',
                 )}
             >

@@ -2,11 +2,7 @@ import { cx } from '@/Utils/classNames';
 
 const PADDING = { none: '', sm: 'p-3', md: 'p-4', lg: 'p-5' };
 
-/**
- * Kartu putih gading bersudut besar dengan bayangan lembut.
- * variant: 'outline' (bergaris, untuk halaman staf) | 'plain' (tanpa garis, untuk halaman pelanggan)
- * interactive: kartu yang bisa diklik naik sedikit saat disentuh kursor
- */
+
 export default function Card({ as: Tag = 'section', variant = 'outline', padding = 'lg', interactive = false, className = '', children, ...props }) {
     return (
         <Tag

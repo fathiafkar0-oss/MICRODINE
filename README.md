@@ -79,6 +79,8 @@ Font (Plus Jakarta Sans untuk aplikasi, Cormorant Garamond untuk judul halaman a
 | `/dapur` | `Kitchen/Dashboard` — layar dapur (Kitchen Display) | Dapur |
 | `/admin` | `Admin/Dashboard` — ringkasan bisnis | Admin |
 | `/admin/menu` | `Admin/Menus` — menu & HPP + margin otomatis | Admin |
+| `/admin/analisis-menu` | `Admin/MenuAnalytics` — menu terlaris, paling diminati, matriks menu | Admin |
+| `/admin/meja` | `Admin/Tables` — tambah/ubah/nonaktifkan meja, buat ulang & cetak semua QR | Admin |
 | `/admin/laporan` | `Admin/Reports` — transaksi & laporan (unduh CSV) | Admin |
 | `/admin/target` | `Admin/Targets` — target penjualan bulanan | Admin |
 | `/admin/pengaturan` | `Admin/Settings` — pajak, batas bayar, sesi meja, akun staf | Admin |
@@ -108,12 +110,12 @@ resources/
     │   ├── Customer/             Menu/Index, Cart/Index, Checkout/Index, Payment/Index, Order/Status
     │   ├── Cashier/              Dashboard, Orders, Tables, History  (+ Partials/)
     │   ├── Kitchen/              Dashboard  (+ Partials/)
-    │   ├── Admin/                Dashboard, Menus, Reports, Targets, Settings  (+ Partials/)
+    │   ├── Admin/                Dashboard, Menus, MenuAnalytics, Tables, Reports, Targets, Settings  (+ Partials/)
     │   └── Landing/              Index  (+ Partials/: Hero, Fitur, Tentang, Menu, Langkah, Footer)
-    ├── Hooks/                    useCart, useCurrency, useCountdown, useReveal, useNow
+    ├── Hooks/                    useCart, useCurrency, useCountdown, useReveal, useNow, useSeenOnScreen
     ├── Utils/                    formatCurrency, formatDate, status, classNames, navigation,
-    │                             orderStorage, salesTarget
-    └── Data/mock/                DATA CONTOH: menus, orders, tables, restaurant, staff, reports
+    │                             orderStorage, salesTarget, tables, menuAnalytics, menuInteractions
+    └── Data/mock/                DATA CONTOH: menus, orders, tables, restaurant, staff, reports, menuAnalytics
 ```
 
 Aturan main supaya rapi:
@@ -142,3 +144,11 @@ aksi kedua `bg-navy`. Status selalu memakai **label teks**, bukan warna saja.
 - `auth.user` dibagikan lewat `app/Http/Middleware/HandleInertiaRequests.php`.
 - Real-time: antrean kasir, layar dapur, dan status pelanggan menunggu event dari Laravel Reverb.
 - QRIS memakai payment gateway **mode sandbox**; status lunas hanya dari webhook yang valid.
+- **Meja** (`tables`: `number` unik 2 digit, `seats`, `area`, `is_active`, `qr_token`): meja **tidak pernah dihapus**,
+  cukup dinonaktifkan agar histori aman. Meja yang sedang terisi tidak boleh dinonaktifkan. URL QR memakai token
+  acak `/meja/07?k=...`; meja nonaktif atau token salah ditolak. Lihat komentar di `Pages/Admin/Tables.jsx`.
+- **Analisis Menu**: terlaris/omzet/laba dihitung dari `order_items` × `orders` yang **lunas** (snapshot harga & HPP).
+  "Paling diminati" butuh tabel `menu_interactions` (`menu_id`, `type`: `lihat`/`keranjang`, `table_session_id`,
+  `created_at`) yang diisi lewat `POST /meja/{table}/interaksi` (aktifkan `SEND_TO_SERVER` di
+  `Utils/menuInteractions.js`). Tambahkan index `orders(paid_at)` dan `order_items(menu_id)`.
+- Halaman menu pelanggan menerima props `popularity` `{ menuId: porsi 7 hari }` untuk label **Terlaris**.

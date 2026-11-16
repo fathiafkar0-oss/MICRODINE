@@ -2,10 +2,14 @@ import { Download } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 
 import Button from '@/Components/UI/Button';
+import { tableQrUrl } from '@/Utils/tables';
 
-/** Kartu cetak meja: QR (dipindai pelanggan) + kode barcode (dipindai scanner kasir). */
-export default function TableQrCard({ table, appUrl }) {
-    const url = `${appUrl}/meja/${table.number}`;
+/**
+ * Kartu QR meja: QR (dipindai pelanggan) + kode barcode (dipindai scanner kasir) + tombol unduh.
+ * Dipakai di halaman meja kasir dan halaman Meja & QR admin. `actions` = tombol tambahan (mis. buat ulang QR).
+ */
+export default function TableQrCard({ table, appUrl, actions }) {
+    const url = tableQrUrl(appUrl, table);
     const barcode = `MJ-${table.number}`;
     const svgId = `qr-table-${table.number}`;
 
@@ -35,6 +39,7 @@ export default function TableQrCard({ table, appUrl }) {
                 <Download className="h-4 w-4" aria-hidden="true" />
                 Unduh QR (SVG)
             </Button>
+            {actions}
         </div>
     );
 }

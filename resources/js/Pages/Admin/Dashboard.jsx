@@ -1,3 +1,4 @@
+import { Link } from '@inertiajs/react';
 import { CalendarDays, CircleDollarSign, Package, QrCode, ReceiptText, TrendingUp, Wallet } from 'lucide-react';
 import { useState } from 'react';
 
@@ -108,7 +109,15 @@ export default function AdminDashboard({ dashboard = mockDashboard, menus = mock
                     </Card>
 
                     <Card>
-                        <CardHeader title="Menu terlaris hari ini" className="mb-3" />
+                        <CardHeader
+                            title="Menu terlaris hari ini"
+                            className="mb-3"
+                            action={
+                                <Link href="/admin/analisis-menu" className="text-xs font-bold text-warn transition-colors hover:text-navy">
+                                    Lihat analisis →
+                                </Link>
+                            }
+                        />
                         <ul className="stagger space-y-3">
                             {topMenus.map((row) => {
                                 const menu = menus.find((item) => item.id === row.menuId);

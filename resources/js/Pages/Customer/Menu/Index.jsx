@@ -1,31 +1,73 @@
 import { Head, Link } from '@inertiajs/react';
-import { Info, ListOrdered, Plus, ShoppingBag } from 'lucide-react';
+import { Crown, Info, ListOrdered, Plus, ShoppingBag } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
 import FilterChips from '@/Components/Shared/FilterChips';
 import SearchBar from '@/Components/Shared/SearchBar';
 import MenuThumb from '@/Components/UI/MenuThumb';
 import QuantityStepper from '@/Components/UI/QuantityStepper';
+import { menuAnalytics } from '@/Data/mock/menuAnalytics';
 import { categories as mockCategories, menus as mockMenus } from '@/Data/mock/menus';
 import { restaurant as mockRestaurant } from '@/Data/mock/restaurant';
 import useCart from '@/Hooks/useCart';
+import useSeenOnScreen from '@/Hooks/useSeenOnScreen';
 import { cx } from '@/Utils/classNames';
 import { countItems, formatCurrency } from '@/Utils/formatCurrency';
+import { trackMenuInteraction } from '@/Utils/menuInteractions';
+
+const SORTS = [
+    { value: 'rekomendasi', label: 'Rekomendasi' },
+    { value: 'terlaris', label: 'Terlaris' },
+    { value: 'termurah', label: 'Termurah' },
+];
+
+/** Fase frontend: porsi terjual 7 hari terakhir dari data contoh Analisis Menu. Backend: props `popularity`. */
+const mockPopularity = Object.fromEntries(menuAnalytics['7-hari'].map((row) => [row.menuId, row.sold]));
 
 /**
  * Halaman utama pelanggan setelah scan QR meja.
  * Route: GET /meja/{table}
- * Props backend: table, session { joined }, restaurant, categories, menus
+ * Props backend: table, session { joined }, restaurant, categories, menus,
+ *                popularity { [menuId]: porsi terjual 7 hari } (untuk label "Terlaris" & urutan Terlaris)
  */
-export default function MenuIndex({ table = '07', session = { joined: false }, restaurant = mockRestaurant, categories = mockCategories, menus = mockMenus }) {
+export default function MenuIndex({
+    table = '07',
+    session = { joined: false },
+    restaurant = mockRestaurant,
+    categories = mockCategories,
+    menus = mockMenus,
+    popularity = mockPopularity,
+}) {
     const cart = useCart(table);
     const [category, setCategory] = useState('Semua');
     const [query, setQuery] = useState('');
+    const [sort, setSort] = useState('rekomendasi');
+
+    // 3 menu dengan porsi terjual terbanyak (yang masih tersedia) mendapat label "Terlaris"
+    const bestSellers = useMemo(
+        () =>
+            menus
+                .filter((menu) => menu.available && (popularity[menu.id] ?? 0) > 0)
+                .sort((a, b) => (popularity[b.id] ?? 0) - (popularity[a.id] ?? 0))
+                .slice(0, 3)
+                .map((menu) => menu.id),
+        [menus, popularity],
+    );
 
     const visible = useMemo(() => {
         const keyword = query.trim().toLowerCase();
-        return menus.filter((menu) => (category === 'Semua' || menu.category === category) && (!keyword || `${menu.name} ${menu.description}`.toLowerCase().includes(keyword)));
-    }, [menus, category, query]);
+        const list = menus.filter((menu) => (category === 'Semua' || menu.category === category) && (!keyword || `${menu.name} ${menu.description}`.toLowerCase().includes(keyword)));
+        const available = (menu) => (menu.available ? 0 : 1); // menu habis selalu di bawah
+        if (sort === 'terlaris') return [...list].sort((a, b) => available(a) - available(b) || (popularity[b.id] ?? 0) - (popularity[a.id] ?? 0));
+        if (sort === 'termurah') return [...list].sort((a, b) => available(a) - available(b) || a.price - b.price);
+        // Rekomendasi: menu tersedia & berfoto lebih dulu (lebih menggugah), urutan asli dipertahankan
+        return [...list].sort((a, b) => available(a) - available(b) || (a.image ? 0 : 1) - (b.image ? 0 : 1));
+    }, [menus, category, query, sort, popularity]);
+
+    const addToCart = (menu) => {
+        cart.add(menu);
+        trackMenuInteraction(table, menu.id, 'keranjang');
+    };
 
     const totalItems = countItems(cart.items);
     const subtotal = cart.items.reduce((sum, item) => sum + item.price * item.qty, 0);
@@ -71,13 +113,39 @@ export default function MenuIndex({ table = '07', session = { joined: false }, r
                         <h2 className="font-display text-2xl font-semibold text-navy">{category === 'Semua' ? 'Semua menu' : category}</h2>
                         <span className="text-xs text-faint">{visible.length} menu</span>
                     </div>
+                    <div className="-mt-1 flex items-center gap-1.5" role="radiogroup" aria-label="Urutkan menu">
+                        <span className="mr-1 text-xs font-semibold text-faint">Urutkan</span>
+                        {SORTS.map((option) => (
+                            <button
+                                key={option.value}
+                                type="button"
+                                role="radio"
+                                aria-checked={sort === option.value}
+                                onClick={() => setSort(option.value)}
+                                className={cx(
+                                    'rounded-full px-3 py-1 text-xs font-semibold transition active:scale-95',
+                                    sort === option.value ? 'bg-navy text-white' : 'bg-panel text-soft ring-1 ring-line hover:text-navy',
+                                )}
+                            >
+                                {option.label}
+                            </button>
+                        ))}
+                    </div>
 
                     {visible.length === 0 ? (
                         <p className="rounded-2xl bg-panel px-4 py-10 text-center text-sm text-soft">Menu tidak ditemukan. Coba kata lain atau pilih kategori Semua.</p>
                     ) : (
                         <ul className="stagger space-y-2.5">
                             {visible.map((menu) => (
-                                <MenuItem key={menu.id} menu={menu} qty={cart.qtyOf(menu.id)} onAdd={() => cart.add(menu)} onDecrease={() => cart.decrease(menu.id)} />
+                                <MenuItem
+                                    key={menu.id}
+                                    menu={menu}
+                                    bestSellerRank={bestSellers.indexOf(menu.id)}
+                                    qty={cart.qtyOf(menu.id)}
+                                    onAdd={() => addToCart(menu)}
+                                    onDecrease={() => cart.decrease(menu.id)}
+                                    onSeen={() => trackMenuInteraction(table, menu.id, 'lihat')}
+                                />
                             ))}
                         </ul>
                     )}
@@ -108,11 +176,27 @@ export default function MenuIndex({ table = '07', session = { joined: false }, r
     );
 }
 
-function MenuItem({ menu, qty, onAdd, onDecrease }) {
+function MenuItem({ menu, bestSellerRank, qty, onAdd, onDecrease, onSeen }) {
+    const ref = useSeenOnScreen(onSeen);
+    const isBestSeller = bestSellerRank >= 0;
+
     return (
-        <li className={cx('flex gap-3 rounded-[18px] border bg-panel p-3', qty ? 'border-gold' : 'border-line')}>
-            <MenuThumb menu={menu} className="h-[84px] w-[84px] rounded-xl" iconClass="h-7 w-7" />
+        <li ref={ref} className={cx('flex gap-3 rounded-[18px] border bg-panel p-3 shadow-[var(--shadow-soft)] transition-colors', qty ? 'border-gold ring-1 ring-gold/25' : 'border-line')}>
+            <div className="relative shrink-0">
+                <MenuThumb menu={menu} className="h-[84px] w-[84px] rounded-[14px]" iconClass="h-7 w-7" />
+                {isBestSeller && (
+                    <span className="absolute -left-1.5 -top-1.5 grid h-6 w-6 place-items-center rounded-full bg-gold text-[11px] font-extrabold text-obsidian shadow-[0_4px_10px_-4px_rgba(204,158,74,0.9)] ring-2 ring-panel">
+                        {bestSellerRank + 1}
+                    </span>
+                )}
+            </div>
             <div className="flex min-w-0 flex-1 flex-col">
+                {isBestSeller && (
+                    <span className="mb-0.5 inline-flex w-fit items-center gap-1 rounded-full bg-gold-tint px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.08em] text-warn ring-1 ring-gold/30">
+                        <Crown className="h-3 w-3" aria-hidden="true" />
+                        Terlaris
+                    </span>
+                )}
                 <p className="font-bold text-navy">{menu.name}</p>
                 <p className="mt-0.5 line-clamp-2 text-xs leading-4 text-faint">{menu.description}</p>
                 <div className="mt-auto flex items-center justify-between gap-2 pt-2">

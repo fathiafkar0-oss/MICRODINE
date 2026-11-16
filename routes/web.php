@@ -50,6 +50,8 @@ Route::inertia('/dapur', 'Kitchen/Dashboard')->name('kitchen');
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::inertia('/', 'Admin/Dashboard')->name('dashboard');
     Route::inertia('/menu', 'Admin/Menus')->name('menus');
+    Route::inertia('/analisis-menu', 'Admin/MenuAnalytics')->name('menu-analytics');
+    Route::inertia('/meja', 'Admin/Tables')->name('tables');
     Route::inertia('/laporan', 'Admin/Reports')->name('reports');
     Route::inertia('/target', 'Admin/Targets')->name('targets');
     Route::inertia('/pengaturan', 'Admin/Settings')->name('settings');

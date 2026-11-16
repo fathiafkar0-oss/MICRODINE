@@ -3,23 +3,15 @@ import { useState } from 'react';
 import toast from 'react-hot-toast';
 
 import PageHeader from '@/Components/Shared/PageHeader';
+import TableQrCard from '@/Components/Shared/TableQrCard';
 import { TableStatusBadge } from '@/Components/UI/Badge';
 import Button from '@/Components/UI/Button';
 import Modal from '@/Components/UI/Modal';
 import { orders as mockOrders } from '@/Data/mock/orders';
 import { tables as mockTables } from '@/Data/mock/tables';
 import CashierLayout from '@/Layouts/CashierLayout';
-import TableQrCard from '@/Pages/Cashier/Partials/TableQrCard';
 import { cx } from '@/Utils/classNames';
-
-/** Fase frontend: status meja diturunkan dari pesanan aktif (meja dengan pesanan = Terisi). */
-function withSessions(tables, orders) {
-    return tables.map((table) => {
-        const active = orders.filter((order) => order.table === table.number);
-        const oldest = [...active].sort((a, b) => b.minutesAgo - a.minutesAgo)[0];
-        return { ...table, status: active.length ? 'terisi' : 'tersedia', session: oldest ? { code: oldest.code, customer: oldest.customer, minutes: oldest.minutesAgo } : null };
-    });
-}
+import { withSessions } from '@/Utils/tables';
 
 /**
  * Manajemen meja: status, tutup sesi, QR & barcode per meja.
@@ -27,7 +19,8 @@ function withSessions(tables, orders) {
  * Props backend: tables [{ number, seats, area, status, session }], appUrl
  */
 export default function CashierTables({ tables: tableProp, appUrl = typeof window !== 'undefined' ? window.location.origin : '' }) {
-    const [tables, setTables] = useState(() => tableProp ?? withSessions(mockTables, mockOrders));
+    // Kasir hanya melihat meja aktif; tambah/ubah/nonaktifkan meja ada di halaman admin Meja & QR
+    const [tables, setTables] = useState(() => tableProp ?? withSessions(mockTables.filter((table) => table.isActive), mockOrders));
     const [qrTable, setQrTable] = useState(null);
     const [closing, setClosing] = useState(null);
     const free = tables.filter((table) => table.status === 'tersedia').length;

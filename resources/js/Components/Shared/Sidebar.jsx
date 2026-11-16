@@ -11,7 +11,7 @@ import { cx, initials } from '@/Utils/classNames';
  */
 export default function Sidebar({ portal, sections, activeHref, user, showKitchenShortcut = false }) {
     return (
-        <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-gold/15 bg-gradient-to-b from-navy to-navy-deep px-4 py-7 text-white lg:flex">
+        <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 print:!hidden flex-col border-r border-gold/15 bg-gradient-to-b from-navy to-navy-deep px-4 py-7 text-white lg:flex">
             <Logo subtitle={portal} className="animate-fade-in px-2" />
             <div className="mx-2 mt-6 h-px bg-gradient-to-r from-gold/40 via-gold/15 to-transparent" aria-hidden="true" />
 

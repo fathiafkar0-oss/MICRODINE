@@ -1,16 +1,6 @@
 import { cx } from '@/Utils/classNames';
 
-/**
- * Tabel data dengan kepala navy (seperti mockup proposal) dan gulir horizontal di layar kecil.
- *
- *   <Table columns={['Menu', 'HPP', 'Harga']} minWidth="min-w-[720px]" footer="Menampilkan 8 data">
- *       {rows.map((row) => (
- *           <TableRow key={row.id}>
- *               <TableCell>{row.name}</TableCell> ...
- *           </TableRow>
- *       ))}
- *   </Table>
- */
+
 export default function Table({ columns, minWidth = 'min-w-[720px]', empty, isEmpty = false, footer, tone = 'navy', className = '', children }) {
     return (
         <div className={cx('overflow-hidden rounded-[20px] border bg-panel', tone === 'navy' ? 'border-navy/60' : 'border-line', className)}>

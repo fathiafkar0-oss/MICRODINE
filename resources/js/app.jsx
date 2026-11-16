@@ -22,6 +22,7 @@ createInertiaApp({
                 {app}
                 <Toaster
                     position="top-center"
+                    containerClassName="print:hidden"
                     toastOptions={{
                         duration: 3000,
                         style: {

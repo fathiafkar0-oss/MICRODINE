@@ -20,6 +20,7 @@ export const isPaid = (order) => PAID_STATUSES.includes(order.status);
 export const TABLE_STATUS = {
     tersedia: { label: 'Tersedia', tone: 'success' },
     terisi: { label: 'Terisi', tone: 'danger' },
+    nonaktif: { label: 'Nonaktif', tone: 'neutral' },
 };
 
 export const PAYMENT_METHOD_LABEL = { qris: 'QRIS', tunai: 'Tunai' };

@@ -101,16 +101,16 @@ resources/
     │   ├── UI/                   Komponen dasar: Button, Input (+Select, Textarea), Modal, Badge,
     │   │                         Card, Table, Toggle, StatCard, MenuThumb, QuantityStepper, TrendChart
     │   └── Shared/               Komponen bersama: Sidebar, Navbar, SearchBar, Pagination, PageHeader,
-    │                             FilterChips, Logo, LiveBadge, OrderCard, CashPaymentModal, Ornament, Reveal
+    │                             FilterChips, Logo, LiveBadge, OrderCard, CashPaymentModal, Ornament, Reveal, ClassicLogo
     ├── Layouts/                  AdminLayout, CashierLayout, KitchenLayout, CustomerLayout
     ├── Pages/
-    │   ├── Auth/Login.jsx
+    │   ├── Auth/                 Login  (+ Partials/: panel foto, tab peran, kolom isian)
     │   ├── Customer/             Menu/Index, Cart/Index, Checkout/Index, Payment/Index, Order/Status
     │   ├── Cashier/              Dashboard, Orders, Tables, History  (+ Partials/)
     │   ├── Kitchen/              Dashboard  (+ Partials/)
     │   ├── Admin/                Dashboard, Menus, Reports, Targets, Settings  (+ Partials/)
     │   └── Landing/              Index  (+ Partials/: Hero, Fitur, Tentang, Menu, Langkah, Footer)
-    ├── Hooks/                    useCart, useCurrency, useCountdown, useReveal
+    ├── Hooks/                    useCart, useCurrency, useCountdown, useReveal, useNow
     ├── Utils/                    formatCurrency, formatDate, status, classNames, navigation,
     │                             orderStorage, salesTarget
     └── Data/mock/                DATA CONTOH: menus, orders, tables, restaurant, staff, reports

@@ -1,6 +1,7 @@
 import { Link } from '@inertiajs/react';
-import { ArrowUpRight, ChefHat } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 
+import ClassicLogo from '@/Components/Shared/ClassicLogo';
 import { cx } from '@/Utils/classNames';
 
 /** Tujuan tombol di halaman awal. Meja 07 dipakai sebagai meja demo. */
@@ -45,14 +46,7 @@ export function LandingButton({ href, variant = 'crimson', className = '', child
     );
 }
 
-/** Logo bulat bergaris emas + nama merek serif. */
+/** Logo bulat bergaris emas + nama merek serif (komponen bersama, juga dipakai portal karyawan). */
 export function LandingLogo({ size = 'md' }) {
-    return (
-        <span className="flex items-center gap-3 text-ivory">
-            <span className={cx('grid place-items-center rounded-full border border-gold/80', size === 'md' ? 'h-11 w-11' : 'h-10 w-10')}>
-                <ChefHat className="h-[18px] w-[18px] text-gold" strokeWidth={1.4} aria-hidden="true" />
-            </span>
-            <span className={cx('font-display font-semibold tracking-[0.14em]', size === 'md' ? 'text-2xl' : 'text-xl')}>MICRODINE</span>
-        </span>
-    );
+    return <ClassicLogo size={size} />;
 }

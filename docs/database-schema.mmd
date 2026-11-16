@@ -1,0 +1,141 @@
+erDiagram
+    users ||--o{ table_sessions : "closes"
+    users ||--o{ order_status_logs : "records"
+    users ||--o{ sales_targets : "sets"
+    
+    dining_tables ||--o{ table_sessions : "hosts"
+    table_sessions ||--o{ orders : "contains"
+    
+    categories ||--o{ menu_items : "classifies"
+    menu_items ||--o{ order_items : "references"
+    
+    orders ||--|{ order_items : "details"
+    orders ||--o| payments : "settles"
+    orders ||--o{ order_status_logs : "tracks"
+
+    users {
+        bigint id PK
+        string name "Nama staf"
+        string username UK "Kredensial login"
+        string password "Hashed bcrypt/argon2id"
+        string role "admin | kasir | dapur"
+        boolean is_active "Status aktif"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    restaurant_settings {
+        bigint id PK
+        string restaurant_name "Nama resto"
+        string address "Alamat fisik"
+        string phone "No kontak"
+        boolean tax_enabled "Toggle pajak PBJT/PB1"
+        int tax_rate_percent "Tarif default 10%"
+        int qris_expires_minutes "Batas kedaluwarsa 15 mnt"
+        timestamp updated_at
+    }
+
+    categories {
+        bigint id PK
+        string name UK "Makanan, Minuman, Camilan"
+        string slug UK "Slug URL"
+        int display_order "Urutan tampilan"
+        timestamp created_at
+    }
+
+    menu_items {
+        bigint id PK
+        bigint category_id FK
+        string name "Nama masakan"
+        text description "Deskripsi menu"
+        bigint price "Harga jual (Integer Rupiah)"
+        bigint hpp "HPP modal statis (Integer Rupiah)"
+        string image_path "Path file foto"
+        boolean is_available "Stok dapur aktif"
+        boolean show_in_catalog "Tampil di katalog"
+        timestamp deleted_at "Soft deletes"
+    }
+
+    dining_tables {
+        bigint id PK
+        string number UK "Nomor meja misal 07"
+        int capacity "Kapasitas kursi"
+        string area "Area Dalam / Teras"
+        string qr_token UK "Token acak 32 char CSPRNG"
+        string barcode_code UK "Kode barcode fisik scanner"
+        boolean is_active "Status operasional"
+        timestamp created_at
+    }
+
+    table_sessions {
+        bigint id PK
+        bigint dining_table_id FK "Partial index WHERE active"
+        string status "active | closed"
+        timestamp opened_at "Waktu sesi dibuka"
+        timestamp closed_at "Waktu sesi ditutup"
+        bigint closed_by FK "Kasir penutup sesi"
+    }
+
+    orders {
+        bigint id PK
+        string order_code UK "Audit code misal ORD-0148"
+        string daily_queue_number "No antrean misal A-024"
+        bigint table_session_id FK
+        string customer_name "Nama pelanggan"
+        string source "qr | manual"
+        string payment_method "cash | qris"
+        string payment_status "pending | paid | failed | cancelled | expired"
+        string kitchen_status "queued | cooking | done | served"
+        bigint subtotal "Subtotal kotor (Integer IDR)"
+        bigint tax_amount "Pajak daerah PBJT/PB1 (IDR)"
+        bigint total "Total tagihan lunas (IDR)"
+        timestamp paid_at "Waktu pelunasan tervalidasi"
+        timestamp cancelled_at "Waktu pembatalan"
+        timestamp created_at "Index pelaporan finansial"
+    }
+
+    order_items {
+        bigint id PK
+        bigint order_id FK
+        bigint menu_item_id FK "Nullable on delete"
+        string name_snapshot "Nama menu saat dibuat"
+        int qty "Porsi masakan"
+        text notes "Catatan kustom pelanggan"
+        bigint unit_price_snapshot "Snapshot harga jual"
+        bigint unit_hpp_snapshot "Snapshot modal HPP statis"
+        bigint subtotal_price "qty * unit_price_snapshot"
+        bigint subtotal_hpp "qty * unit_hpp_snapshot"
+    }
+
+    payments {
+        bigint id PK
+        bigint order_id FK
+        string provider "midtrans | cash"
+        string provider_ref "ID referensi gateway"
+        bigint amount "Nominal uang bayar"
+        string status "pending | paid | failed | expired"
+        boolean signature_valid "Validasi SHA-512"
+        jsonb raw_payload "Payload respons gateway"
+        string idempotency_key UK "Kunci anti-duplikasi"
+        timestamp expires_at "Waktu kedaluwarsa QRIS"
+    }
+
+    order_status_logs {
+        bigint id PK
+        bigint order_id FK
+        string actor_type "customer | kasir | dapur | system | gateway"
+        bigint actor_id FK "ID staf"
+        string from_status "Status asal"
+        string to_status "Status mutasi"
+        text notes "Catatan jejak audit"
+        timestamp created_at
+    }
+
+    sales_targets {
+        bigint id PK
+        string month_year UK "Format YYYY-MM"
+        bigint target_amount "Target nominal bulanan"
+        jsonb weekly_targets "Pecahan target mingguan"
+        bigint created_by FK "Admin pembuat"
+        timestamp created_at
+    }

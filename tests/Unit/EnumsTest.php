@@ -21,7 +21,7 @@ class EnumsTest extends TestCase
         $this->assertSame('Kasir', UserRole::Kasir->label());
         $this->assertSame('admin.dashboard', UserRole::Admin->homeRoute());
         $this->assertSame('cashier.dashboard', UserRole::Kasir->homeRoute());
-        $this->assertSame('kitchen', UserRole::Dapur->homeRoute());
+        $this->assertSame('kitchen.display', UserRole::Dapur->homeRoute());
     }
 
     public function test_payment_status_values_and_helpers(): void

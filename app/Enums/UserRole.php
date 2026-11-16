@@ -28,7 +28,7 @@ enum UserRole: string
         return match ($this) {
             self::Admin => 'admin.dashboard',
             self::Kasir => 'cashier.dashboard',
-            self::Dapur => 'kitchen',
+            self::Dapur => 'kitchen.display',
         };
     }
 }

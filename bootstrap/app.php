@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureUserRole;
 use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -16,6 +17,18 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             HandleInertiaRequests::class,
         ]);
+
+        $middleware->alias([
+            'role' => EnsureUserRole::class,
+        ]);
+
+        // Staf yang sudah login diarahkan ke beranda sesuai perannya,
+        // bukan ke halaman publik.
+        $middleware->redirectUsersTo(function (Request $request): string {
+            $user = $request->user();
+
+            return $user === null ? '/' : route($user->role->homeRoute());
+        });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

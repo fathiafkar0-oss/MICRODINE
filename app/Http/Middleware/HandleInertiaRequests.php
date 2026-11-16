@@ -22,19 +22,28 @@ class HandleInertiaRequests extends Middleware
     /**
      * Data yang dibagikan ke semua halaman.
      *
-     * Fase frontend: `auth.user` masih null, sehingga halaman staf memakai
-     * pengguna contoh dari resources/js/data/dummy.js. Backend cukup mengisi
-     * nilai ini setelah autentikasi tersedia.
+     * `auth.user` diisi setelah login staf; halaman frontend memakainya untuk
+     * menampilkan identitas pengguna aktif.
      *
      * @return array<string, mixed>
      */
     public function share(Request $request): array
     {
+        $user = $request->user();
+
         return [
             ...parent::share($request),
             'appName' => config('app.name'),
             'auth' => [
-                'user' => $request->user()?->only(['id', 'name', 'role']),
+                'user' => $user === null ? null : [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'username' => $user->username,
+                    'role' => $user->role->value,
+                ],
+            ],
+            'flash' => [
+                'status' => $request->session()->get('status'),
             ],
         ];
     }

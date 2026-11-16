@@ -82,7 +82,7 @@ resources/js/
 - Public customer routes (table scan, order submission) MUST be rate-limited (throttled) to prevent abuse.
 
 ## 10. Agent Operating Guidelines
-- Before coding, read `AGENTS.md`, `PRD.md`, `ARCHITECTURE.md`, `DESIGN.md`, and `PLAN.md`.
+- Before coding, read `AGENTS.md`, `PRD.md`, `ARCHITECTURE.md`, `DESIGN.md`, `PLAN.md`, and `API_CONTRACT.md`.
 - Strictly work on one assigned task from `PLAN.md` per branch.
 - Never invent or expand scope beyond the approved PRD.
 - Clarify ambiguities with the user; never make speculative assumptions on business logic.

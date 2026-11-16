@@ -2,39 +2,29 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
 
     /**
-     * Seed the application's database.
+     * Seed database demo MICRODINE.
      *
-     * Akun staf awal agar portal login bisa dipakai sejak Fase 1.
-     * Data demo lengkap (meja, menu, transaksi 14 hari) ditambahkan pada T-011.
+     * Menghasilkan: konfigurasi restoran, 3 akun staf, 4 kategori,
+     * 15 menu, 12 meja, target bulanan, dan riwayat transaksi 14 hari.
      */
     public function run(): void
     {
-        $accounts = [
-            ['name' => 'Admin MICRODINE', 'username' => 'admin', 'role' => 'admin'],
-            ['name' => 'Kasir MICRODINE', 'username' => 'kasir', 'role' => 'kasir'],
-            ['name' => 'Dapur MICRODINE', 'username' => 'dapur', 'role' => 'dapur'],
-        ];
-
-        foreach ($accounts as $account) {
-            User::updateOrCreate(
-                ['username' => $account['username']],
-                [
-                    'name' => $account['name'],
-                    'role' => $account['role'],
-                    'is_active' => true,
-                    'password' => Hash::make('password'),
-                ],
-            );
-        }
+        $this->call([
+            RestaurantSettingSeeder::class,
+            StaffSeeder::class,
+            CategorySeeder::class,
+            MenuItemSeeder::class,
+            DiningTableSeeder::class,
+            SalesTargetSeeder::class,
+            DemoTransactionSeeder::class,
+        ]);
     }
 }

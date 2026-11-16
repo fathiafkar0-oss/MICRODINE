@@ -31,14 +31,16 @@ Platform ini melayani 4 persona pengguna dengan batas wewenang yang tegas:
 
 | Peran (Role) | Identifikasi / Autentikasi | Tanggung Jawab Utama | Rute Utama yang Diizinkan |
 | :--- | :--- | :--- | :--- |
-| **Pelanggan (`pelanggan`)** | Tanpa akun; terautentikasi melalui token QR unik meja fisik | Memindai QR meja, memesan menu secara mandiri (*self-ordering*), membayar via QRIS/Tunai, melacak status masakan | `/table/{token}`, `/order/cart`, `/order/checkout`, `/order/{code}/status` |
-| **Kasir (`kasir`)** | Kredensial staf (username & password) via Portal Karyawan | Memvalidasi pembayaran tunai, mengoperasikan antrean Kanban, memproses pesanan manual via barcode meja, memantau meja, menutup sesi meja, mencetak struk | `/cashier/orders`, `/cashier/tables`, `/cashier/history` |
-| **Dapur (`dapur`)** | Staf dapur (akses tampilan Kitchen Display System) | Memantau tiket pesanan lunas secara *real-time*, memperbarui progres masakan (*Cooking → Done*) | `/kitchen/display` |
-| **Admin (`admin`)** | Kredensial pemilik/manajer via Portal Karyawan | Mengelola master menu & HPP, menganalisis dashboard keuangan, audit laporan historis, mengatur pajak daerah, kelola akun staf | `/admin/dashboard`, `/admin/menus`, `/admin/reports`, `/admin/settings` |
+| **Pelanggan (`pelanggan`)** | Tanpa akun; terautentikasi melalui parameter/token QR meja fisik | Memindai QR meja, memesan menu secara mandiri (*self-ordering*), membayar via QRIS/Tunai, melacak status masakan | `/meja/{table}`, `/meja/{table}/keranjang`, `/meja/{table}/checkout`, `/pesanan/{code}`, `/pesanan/{code}/bayar` |
+| **Kasir (`kasir`)** | Kredensial staf (username & password) via Portal Karyawan | Memvalidasi pembayaran tunai, mengoperasikan antrean Kanban, memproses pesanan manual via barcode meja, memantau meja, menutup sesi meja, mencetak struk | `/staf/masuk`, `/kasir`, `/kasir/pesanan`, `/kasir/meja`, `/kasir/histori` |
+| **Dapur (`dapur`)** | Staf dapur (akses tampilan Kitchen Display System) | Memantau tiket pesanan lunas secara *real-time*, memperbarui progres masakan (*Cooking → Done*) | `/dapur` |
+| **Admin (`admin`)** | Kredensial pemilik/manajer via Portal Karyawan | Mengelola master menu & HPP, menganalisis dashboard keuangan, audit laporan historis, mengatur pajak daerah, kelola akun staf | `/staf/masuk`, `/admin`, `/admin/menu`, `/admin/laporan`, `/admin/target`, `/admin/pengaturan` |
 
 ---
 
 ## 3. Cakupan Proyek (Project Scope)
+
+> **Status Implementasi**: Seluruh antarmuka pengguna frontend (9 layar lengkap, komponen UI, mock data, dan Tailwind v4 `@theme`) telah selesai diimplementasikan pada repositori. Pengembangan aktif saat ini difokuskan pada pengikatan (*wiring*) ke backend Laravel monolitik: skema database PostgreSQL riil, service & action domain, otentikasi riil, integrasi QRIS Midtrans, dan WebSockets Laravel Reverb.
 
 ### 3.1 Cakupan Inti (MVP - Minimum Viable Product)
 Fokus mutlak pada penyelesaian alur bisnis utama (*core workflow*) dari awal hingga akhir (*end-to-end*):
@@ -137,14 +139,14 @@ Fitur-fitur berikut secara eksplisit **tidak dikembangkan** dalam rilis ini:
 #### [FR-06] Portal Login Terpusat & Kontrol Akses
 - **User Story**: Sebagai staf restoran, saya ingin masuk ke sistem melalui portal login terpusat yang aman sesuai peran saya (Kasir atau Admin).
 - **Acceptance Criteria**:
-  - *Given* portal login di rute `/login`,  
+  - *Given* portal login di rute `/staf/masuk`,  
     *When* kasir memasukkan username dan password di tab **Kasir**,  
-    *Then* sistem mengotentikasi dan mengarahkan pengguna ke halaman antrean pesanan kasir (`/cashier/orders`).
-  - *Given* portal login di rute `/login`,  
+    *Then* sistem mengotentikasi dan mengarahkan pengguna ke halaman antrean pesanan kasir (`/kasir/pesanan`).
+  - *Given* portal login di rute `/staf/masuk`,  
     *When* admin memasukkan username dan password di tab **Admin**,  
-    *Then* sistem mengotentikasi dan mengarahkan pengguna ke dashboard eksekutif (`/admin/dashboard`).
+    *Then* sistem mengotentikasi dan mengarahkan pengguna ke dashboard eksekutif (`/admin`).
   - *Given* pengguna yang tidak terotentikasi mencoba mengakses rute internal staf,  
-    *Then* sistem memblokir akses dan mengalihkan ke `/login`.
+    *Then* sistem memblokir akses dan mengalihkan ke `/staf/masuk`.
   - *Given* percobaan login gagal berturut-turut melebihi batas (5 kali),  
     *Then* sistem menerapkan *rate-limiting (throttling)* selama 60 detik.
 
@@ -218,7 +220,7 @@ Fitur-fitur berikut secara eksplisit **tidak dikembangkan** dalam rilis ini:
 #### [FR-12] Layar Pemantauan Dapur Real-Time (KDS)
 - **User Story**: Sebagai juru masak dapur, saya ingin melihat pesanan yang sudah lunas pada layar monitor berukuran besar secara otomatis tanpa menyentuh tombol refresh.
 - **Acceptance Criteria**:
-  - *Given* layar KDS dibuka di `/kitchen/display`,  
+  - *Given* layar KDS dibuka di `/dapur`,  
     *When* ada pesanan baru berstatus `paid` (baik dari QRIS maupun tunai),  
     *Then* tiket pesanan baru seketika muncul mengisi slot grid dapur dengan animasi penanda dan indikator label "Live - update otomatis".
   - *Given* tiket pesanan di dapur,  
@@ -395,7 +397,7 @@ Fitur-fitur berikut secara eksplisit **tidak dikembangkan** dalam rilis ini:
 - **Inkonsistensi Alur Meja**: Proposal Bab 1.3 menyebut pelanggan *"memilih meja"*, namun Bab 2.1 merinci alur QR meja otomatis.  
   *Keputusan PRD*: Alur meja **sepenuhnya otomatis** dari pemindaian QR token meja fisik. Tidak ada pemilihan nomor meja manual oleh pelanggan. Kasir adalah satu-satunya peran yang dapat memilih meja secara manual untuk pelanggan offline.
 - **Inkonsistensi Tab Login Portal Karyawan**: Mockup UI hanya menyediakan tab untuk Kasir dan Admin, sementara peran Dapur tercantum dalam proposal.  
-  *Keputusan PRD*: Mengadopsi **Opsi A**, di mana layar KDS Dapur (`/kitchen/display`) dapat diluncurkan langsung dari tautan cepat di portal kasir yang diautentikasi atau menggunakan PIN/token dapur ringkas, sehingga perangkat monitor dapur tidak memerlukan login akun staf berkala.
+  *Keputusan PRD*: Mengadopsi **Opsi A**, di mana layar KDS Dapur (`/dapur`) dapat diluncurkan langsung dari tautan cepat di portal kasir yang diautentikasi atau menggunakan PIN/token dapur ringkas, sehingga perangkat monitor dapur tidak memerlukan login akun staf berkala.
 - **Fitur Tambahan Mockup**: Target Penjualan, Pengaturan Restoran, dan Akun Kasir dikategorikan sebagai **MVP+**.
 - **Klaim Human Error**: Pernyataan proposal *"dihilangkan sepenuhnya"* disesuaikan menjadi *"diminimalkan secara signifikan"*.
 

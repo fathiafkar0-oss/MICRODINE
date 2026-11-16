@@ -67,143 +67,98 @@ Standar minimum rasio kontras WCAG AA adalah **4.5:1** untuk teks normal dan **3
 
 ---
 
-### 2.3 Variabel CSS Semantik & Konfigurasi Tailwind CSS
+### 2.3 Konfigurasi Tailwind CSS v4 (@theme) & Variabel Desain
 
-Kedua tema diikat dalam satu set token semantik variabel CSS yang diletakkan pada berkas `resources/css/app.css`:
+Repositori mengadopsi arsitektur **Tailwind CSS v4** dengan plugin `@tailwindcss/vite`. Seluruh token desain didefinisikan secara deklaratif menggunakan direktif `@theme` langsung pada `resources/css/app.css` tanpa memerlukan berkas `tailwind.config.js` eksternal:
 
 ```css
 /* resources/css/app.css */
-@layer base {
-  /* TEMA 1: THEATRE (Default Antarmuka Pelanggan & Layout Staf Sesuai Mockup) */
-  :root,
-  [data-theme="theatre"] {
-    --color-bg: #F7EBE0;           /* Ethereal Ivory */
-    --color-surface: #FFFFFF;      /* Kartu & Modal Putih Bersih */
-    --color-surface-hover: #F2E4D8;
-    --color-primary: #CC9E4A;      /* Opulent Gold */
-    --color-primary-hover: #B88B38;
-    --color-on-primary: #171721;   /* Velvet Obsidian (Kontras AAA di atas Emas) */
-    --color-secondary: #0A1D4B;    /* Regal Navy */
-    --color-secondary-hover: #071435;
-    --color-on-secondary: #FFFFFF;
-    --color-text: #171721;         /* Velvet Obsidian */
-    --color-text-muted: #6B6B78;
-    --color-border: #E8DACF;
-    --color-sidebar: #0A1D4B;      /* Sidebar Navy */
-    --color-sidebar-text: #FFFFFF;
-    --color-sidebar-active: #CC9E4A;
-    
-    /* Warna Status Fungsional */
-    --color-danger: #9E0E18;       /* Deep Crimson */
-    --color-danger-bg: #FEE2E2;
-    --color-success: #16A34A;      /* Emerald */
-    --color-success-bg: #DCFCE7;
-    --color-warning: #D97706;      /* Amber */
-    --color-warning-bg: #FEF3C7;
-    --color-info: #2563EB;         /* Blue */
-    --color-info-bg: #DBEAFE;
-  }
+@import 'tailwindcss';
+@import '@fontsource-variable/plus-jakarta-sans';
 
-  /* TEMA 2: OCEAN (Pilihan Nuansa Dingin untuk Portal Staf) */
-  [data-theme="ocean"] {
-    --color-bg: #DAE1EE;           /* Timid Blue */
-    --color-surface: #FFFFFF;
-    --color-surface-hover: #EEF2F8;
-    --color-primary: #566680;      /* Dana */
-    --color-primary-hover: #455369;
-    --color-on-primary: #FFFFFF;
-    --color-secondary: #8E9CB7;    /* Periwinkle Blossom */
-    --color-secondary-hover: #7786A0;
-    --color-on-secondary: #FFFFFF;
-    --color-text: #10161A;         /* Black Is Back */
-    --color-text-muted: #566680;
-    --color-border: #B4C0D5;       /* Movie Magic */
-    --color-sidebar: #10161A;      /* Black Is Back */
-    --color-sidebar-text: #FFFFFF;
-    --color-sidebar-active: #566680;
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
 
-    /* Status Fungsional */
-    --color-danger: #DC2626;
-    --color-danger-bg: #FEE2E2;
-    --color-success: #16A34A;
-    --color-success-bg: #DCFCE7;
-    --color-warning: #D97706;
-    --color-warning-bg: #FEF3C7;
-    --color-info: #2563EB;
-    --color-info-bg: #DBEAFE;
-  }
+/*
+ * Token desain MICRODINE, mengikuti mockup proposal (BAB II 2.3).
+ * Palet: Regal Navy, Deep Crimson, Opulent Gold, Ethereal Ivory, Velvet Obsidian.
+ *
+ * Aturan pakai singkat:
+ * - Latar halaman: bg-canvas · kartu: bg-panel + border-line
+ * - Aksi utama: bg-gold text-obsidian (tombol pil) · aksi kedua: bg-navy text-white
+ * - Status selalu memakai label teks, bukan warna saja
+ */
+@theme {
+    --font-sans: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+
+    /* Warna merek */
+    --color-navy: #0a1d4b;
+    --color-navy-hover: #162c68;
+    --color-navy-soft: #1c2f63;
+    --color-crimson: #9e0e18;
+    --color-gold: #cc9e4a;
+    --color-gold-hover: #b98a35;
+    --color-gold-soft: #f2cf87;
+    --color-gold-tint: #faf0dc;
+    --color-ivory: #f4e8db;
+    --color-obsidian: #171721;
+
+    /* Permukaan & teks */
+    --color-canvas: #f4e8db;
+    --color-panel: #fffcf7;
+    --color-raised: #f8efe4;
+    --color-line: #e9dccb;
+    --color-line-strong: #d3c1a8;
+    --color-ink: #171721;
+    --color-soft: #474a59;
+    --color-faint: #686b78;
+
+    /* Status fungsional (dipasangkan dengan label teks) */
+    --color-success: #1e6f48;
+    --color-success-tint: #e1f0e6;
+    --color-danger: #9e0e18;
+    --color-danger-tint: #f7e0e2;
+    --color-warn: #7a5410;
+    --color-warn-tint: #f6e7c9;
+    --color-info: #34446e;
+    --color-info-tint: #e6e9f1;
+
+    --radius-card: 16px;
+
+    --animate-fade-in: fade-in 160ms ease-out;
+    --animate-slide-up: slide-up 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    --animate-pop-in: pop-in 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-```
 
-#### Konfigurasi `tailwind.config.js` Siap Pakai
-```javascript
-// tailwind.config.js
-import defaultTheme from 'tailwindcss/defaultTheme';
+@layer base {
+    html {
+        -webkit-text-size-adjust: 100%;
+        background-color: var(--color-canvas);
+    }
 
-/** @type {import('tailwindcss').Config} */
-export default {
-  content: [
-    './vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php',
-    './storage/framework/views/*.php',
-    './resources/views/**/*.blade.php',
-    './resources/js/**/*.jsx',
-  ],
-  theme: {
-    extend: {
-      colors: {
-        bg: 'var(--color-bg)',
-        surface: {
-          DEFAULT: 'var(--color-surface)',
-          hover: 'var(--color-surface-hover)',
-        },
-        primary: {
-          DEFAULT: 'var(--color-primary)',
-          hover: 'var(--color-primary-hover)',
-          fg: 'var(--color-on-primary)',
-        },
-        secondary: {
-          DEFAULT: 'var(--color-secondary)',
-          hover: 'var(--color-secondary-hover)',
-          fg: 'var(--color-on-secondary)',
-        },
-        txt: {
-          DEFAULT: 'var(--color-text)',
-          muted: 'var(--color-text-muted)',
-        },
-        border: 'var(--color-border)',
-        sidebar: {
-          DEFAULT: 'var(--color-sidebar)',
-          txt: 'var(--color-sidebar-text)',
-          active: 'var(--color-sidebar-active)',
-        },
-        status: {
-          danger: 'var(--color-danger)',
-          'danger-bg': 'var(--color-danger-bg)',
-          success: 'var(--color-success)',
-          'success-bg': 'var(--color-success-bg)',
-          warning: 'var(--color-warning)',
-          'warning-bg': 'var(--color-warning-bg)',
-          info: 'var(--color-info)',
-          'info-bg': 'var(--color-info-bg)',
-        },
-      },
-      fontFamily: {
-        sans: ['"Plus Jakarta Sans"', ...defaultTheme.fontFamily.sans],
-        brand: ['"Cormorant Garamond"', ...defaultTheme.fontFamily.serif],
-      },
-      borderRadius: {
-        '2xl': '16px',
-        '3xl': '24px',
-      },
-      boxShadow: {
-        card: '0 2px 8px -2px rgba(23, 23, 33, 0.06), 0 4px 16px -4px rgba(23, 23, 33, 0.04)',
-        modal: '0 20px 25px -5px rgba(23, 23, 33, 0.2), 0 10px 10px -5px rgba(23, 23, 33, 0.1)',
-        cta: '0 8px 20px -4px rgba(204, 158, 74, 0.35)',
-      },
-    },
-  },
-  plugins: [],
-};
+    body {
+        font-family: var(--font-sans);
+        font-feature-settings: 'tnum' 1;
+        color: var(--color-ink);
+        -webkit-font-smoothing: antialiased;
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--color-navy);
+        outline-offset: 2px;
+    }
+}
+
+@utility scrollbar-none {
+    scrollbar-width: none;
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+@utility menu-tile {
+    background-image: linear-gradient(135deg, #b8742f 0%, #7a3b16 100%);
+}
 ```
 
 ---
@@ -219,81 +174,87 @@ export default {
 
 ## 3. Tata Letak Induk (Layout Shells)
 
+Sistem antarmuka terbagi ke dalam **4 tata letak independen** (`resources/js/Layouts/`) yang disesuaikan secara spesifik untuk ergonomi masing-masing persona:
+
 ### 3.1 Customer Shell (`CustomerLayout.jsx`)
-- **Lebar Maksimal**: `max-w-md` (~390px hingga 428px) berada di tengah (*centered*) saat dibuka di desktop untuk menjaga tampilan *mobile-first*.
+- **Target Form Factor**: Mobile-first viewport (~390px hingga 428px), terpusat (`max-w-md mx-auto min-h-screen`) saat diakses melalui peramban desktop.
 - **Header Atas (Sticky)**:
   - Latar belakang: `#0A1D4B` (Regal Navy).
-  - Teks brand `MICRODINE` warna putih/emas.
-  - Kartu lencana meja fisik warna navy pekat dengan teks kuning emas: *"Kamu duduk di Meja 07 — Sesi aktif: pesanan terikat meja ini"*.
-- **Area Konten (Scrollable)**: Berisi katalog menu, keranjang, checkout, dan status pesanan dengan latar belakang `#F7EBE0` (Ethereal Ivory).
+  - Teks brand `MICRODINE` dengan lencana nomor meja emas: *"Meja [X]"*.
+  - Indikator status sesi meja aktif.
+- **Area Konten (Scrollable)**: Berisi katalog menu, keranjang, checkout, dan status pesanan dengan kanvas `--color-canvas` (`#F4E8DB`).
 - **Bilah Aksi Bawah (Sticky Bottom Action Bar)**:
-  - Mengapung di bagian bawah layar gawai dengan latar belakang `#0A1D4B` atau `#171721`.
-  - Tombol CTA warna `#CC9E4A` (Opulent Gold) membulat (`rounded-xl`), teks tebal `#171721` (Velvet Obsidian): *"Lihat Keranjang >"* atau *"Konfirmasi Pesanan"*.
+  - Mengapung di bagian bawah layar gawai dengan latar panel ivory/navy.
+  - Tombol aksi utama CTA emas membulat (`bg-gold text-obsidian rounded-xl`): *"Lihat Keranjang"* atau *"Konfirmasi Pesanan"*.
 
-### 3.2 Staff Shell (`StaffLayout.jsx`)
-- **Sidebar Navigasi Kiri (Fixed, Lebar 260px)**:
-  - Latar belakang: `#0A1D4B` (Regal Navy) atau `#10161A` (Black Is Back).
-  - Header: Logo `MICRODINE` dengan lencana peran kecil (misal: "Portal Kasir" atau "Portal Admin").
-  - Grup Menu:
-    - Label seksi huruf kapital kecil: `KASIR` / `ADMIN` / `OPERASIONAL`.
-    - Item menu dengan ikon `lucide-react`, teks warna putih transparan (`text-white/70`), state aktif memiliki lencana emas / latar kontras.
-  - Footer Sidebar: Profil staf bertugas (Inisial dalam lingkaran, Nama Staf, dan tombol Logout).
-- **Header Atas Staf (Top Bar)**:
-  - Menampilkan tanggal aktif format Indonesia (*"Sabtu, 8 November 2026"*), bilah pencarian global, dan indikator status soket Reverb (*"Tersinkron real-time"* dengan titik hijau berkedip).
-- **Area Kanvas Konten**: Area fleksibel `flex-1 overflow-y-auto` dengan padding standar `p-6` hingga `p-8`.
+### 3.2 Cashier Shell (`CashierLayout.jsx`)
+- **Navigasi Atas & Status Operasional**:
+  - Top bar bersih dengan logo MICRODINE dan tab navigasi cepat: **Pesanan (Kanban)**, **Manajemen Meja**, dan **Histori Transaksi**.
+  - Indikator konektivitas WebSocket (*"Online"* / *"Reconnecting..."*).
+  - Jam digital WIB dan profil kasir bertugas.
+- **Area Konten**: Densitas tinggi, layout grid/kanban yang dioptimalkan untuk efisiensi kecepatan operasional di meja kasir.
 
-### 3.3 Layar Penuh Dapur (`KitchenDisplayLayout.jsx`)
-- Layar penuh (*100vw, 100vh*) tanpa sidebar dan navigasi mengganggu.
-- Header minimalis hitam pekat menampilkan jumlah tiket aktif, tiket selesai, dan lencana berkedip: *"Live - update otomatis"*.
-- Grid responsif kartu besar (3 kolom x 2 baris atau 4 kolom x 2 baris tergantung ukuran tablet/TV).
+### 3.3 Kitchen Shell (`KitchenLayout.jsx`)
+- **Target Form Factor**: Layar penuh monitor / tablet dapur (*100vw, 100vh*), bebas distraksi navigasi kasir/admin.
+- **Header Minimalis**:
+  - Judul *"Kitchen Display System (KDS)"*.
+  - Indikator lencana hijau berkedip: *"Live - update otomatis"*.
+  - Ringkasan jumlah tiket antrean memasak dan tiket yang telah selesai.
+- **Kisi Tiket**: Grid responsif kartu tiket berdimensi besar yang dapat dibaca jelas dari jarak 2 meter.
+
+### 3.4 Admin Shell (`AdminLayout.jsx`)
+- **Sidebar Navigasi Kiri (Lebar 240px - 260px)**:
+  - Latar belakang navy pekat (`#0A1D4B`).
+  - Header: Logo `MICRODINE` dengan teks *"Admin Panel"*.
+  - Grup Navigasi:
+    - **Dashboard** (Ringkasan finansial & tren)
+    - **Menu & HPP** (Master data menu & kalkulator margin)
+    - **Laporan** (Audit transaksi & export)
+    - **Target Penjualan** (Proyeksi omzet bulanan & harian)
+    - **Pengaturan** (Pajak daerah PBJT/PB1 & sistem)
+  - Footer Sidebar: Profil Admin dan tombol Keluar (*Logout*).
+- **Kanvas Utama**: Padding standar `p-6` hingga `p-8`, latar `--color-canvas`, kartu metrik berlatar `--color-panel` putih gading.
 
 ---
 
 ## 4. Katalog Komponen UI Lengkap (Component Catalog)
 
-### 4.1 Tombol (Button)
-- **Primary Button**:
-  - *Theatre*: Latar `#CC9E4A` (Opulent Gold), teks `#171721` (Velvet Obsidian), font semibold, `rounded-xl`, shadow halus. Hover: `#B88B38`.
-  - *Ocean*: Latar `#566680` (Dana), teks putih, hover `#455369`.
-- **Secondary Button**: Latar `#0A1D4B` (Regal Navy), teks putih, `rounded-xl`.
-- **Ghost Button**: Latar transparan, border `1px` warna `--color-border`, teks `--color-text`.
-- **Danger Button**: Latar `#9E0E18` (Deep Crimson), teks putih.
-- **States**: `default`, `hover`, `active`, `focus-visible` (ring-2 ring-primary ring-offset-2), `disabled` (opacity-50 cursor-not-allowed), `loading` (spinner animasi).
+Komponen UI diorganisasi ke dalam dua sub-folder di `resources/js/Components/`:
 
-### 4.2 Lencana Status (Status Badges)
-Pill berbentuk membulat penuh (`rounded-full px-3 py-1 text-xs font-semibold`):
-- `Menunggu Bayar`: Latar `#FEF3C7`, teks `#D97706`, titik kuning.
-- `Lunas / Selesai`: Latar `#DCFCE7`, teks `#16A34A`, titik hijau.
-- `Diproses`: Latar `#DBEAFE`, teks `#2563EB`, titik biru.
-- `Dibatalkan / Gagal`: Latar `#FEE2E2`, teks `#9E0E18`, titik merah.
-- `Tersedia (Meja)`: Latar `#DCFCE7`, teks `#16A34A`, ikon centang / titik hijau.
-- `Terisi (Meja)`: Latar `#FEE2E2`, teks `#9E0E18`, titik merah menyala.
+### 4.1 Komponen UI Dasar (`Components/UI/`)
+1. **Button (`Button.jsx`)**:
+   - Varian: `primary` (bg-gold text-obsidian), `secondary` (bg-navy text-white), `danger` (bg-crimson text-white), `ghost` (border border-line text-ink).
+   - Ukuran: `sm`, `md`, `lg`. State: `hover`, `active`, `focus-visible`, `disabled`, `loading`.
+2. **Input & Select (`Input.jsx`)**:
+   - Input teks, angka rupiah, pencarian dengan ikon, textarea catatan masakan.
+3. **Card (`Card.jsx`)**:
+   - Kontainer permukaan bersih (`bg-panel border border-line rounded-card shadow-sm`).
+4. **Modal (`Modal.jsx`)**:
+   - Modal backdrop gelap dengan animasi `pop-in`, tombol tutup, dan area aksi.
+5. **Table & Pagination (`Table.jsx`)**:
+   - Tabel audit transaksi berbaris rapi dengan styling header kontras dan kontrol pagination.
+6. **Toggle (`Toggle.jsx`)**:
+   - Saklar sakelar geser untuk status ketersediaan menu ("Tersedia / Habis") dan toggle pajak PBJT/PB1.
+7. **StatCard (`StatCard.jsx`)**:
+   - Kartu metrik ringkasan omzet, laba kotor, pesanan selesai, dan HPP dengan lencana persentase tren.
+8. **TrendChart & TargetComparisonChart (`TrendChart.jsx`, `TargetComparisonChart.jsx`)**:
+   - Grafik batang omzet dan garis laba bersih 14 hari serta grafik perbandingan target penjualan.
+9. **PaymentDistributionChart & TopSellingList (`PaymentDistributionChart.jsx`, `TopSellingList.jsx`)**:
+   - Visualisasi distribusi metode pembayaran (QRIS vs Tunai) dan daftar produk terlaris.
 
-### 4.3 Modal Kalkulator Pembayaran Tunai Kasir (`CashCalculatorModal.jsx`)
-- Tampil sebagai *dialog pop-up* terpusat dengan *backdrop overlay* gelap transparan (`bg-black/60`).
-- Header: *"Penerimaan Tunai — Meja [X]"*.
-- Baris Total Tagihan: Nominal besar tebal (misal: `Rp 63.800`).
-- Input Uang Diterima: Kotak input besar dengan tombol cepat pecahan uang (`Rp 50.000`, `Rp 100.000`, `Uang Pas`).
-- Kotak Kembalian: Otomatis menghitung dan menampilkan selisih uang kembalian secara *real-time* dengan warna hijau jelas (misal: *"Kembalian: Rp 36.200"*).
-- Tombol Konfirmasi: *"Konfirmasi & Cetak Struk"*.
-
-### 4.4 Kartu Kanban Kasir (`KanbanCard.jsx`)
-- Kartu putih `bg-white rounded-2xl p-4 shadow-card border border-border`.
-- Header kartu: Nomor antrean (misal: `A-024`), nomor meja (`Meja 07`), dan durasi waktu sejak dipesan (`2 menit yang lalu`).
-- Daftar menu: Nama item masakan, porsi (`2x`), dan catatan khusus (`Pedas sedang`).
-- Footer kartu: Total tagihan (`Rp 63.800`), lencana metode bayar (`QRIS` atau `Tunai`), serta tombol aksi kontekstual (*"Terima Tunai"* atau *"Tandai Selesai"*).
-
-### 4.5 Kartu Denah Meja (`TableCard.jsx`)
-- Kotak meja proporsional berlatar belakang putih dengan bingkai tegas:
-  - **Status Tersedia**: Lencana hijau *"Tersedia"*, kapasitas kursi, keterangan *"Siap dipakai"*.
-  - **Status Terisi**: Lencana merah *"Terisi"*, nomor pesanan aktif (`A-024`), nama pemesan (`Andi`), durasi duduk (`8 mnt`), tombol *"Lihat QR Meja"*.
-
-### 4.6 Tiket Dapur KDS (`KDSTicketCard.jsx`)
-- Kartu tiket berdimensi besar khusus keterbacaan jarak 2 meter.
-- Header kontras tinggi: Nomor antrean raksasa (misal `A-024`), nomor meja `Meja 07`, dan timer durasi waktu berjalan.
-- Isi: Item masakan dengan ukuran font `text-lg` tebal, kuantitas dilingkari khusus, catatan racikan makanan disorot dengan warna kuning amber.
-- Slot Kosong: Kartu bergaris putus-putus (*dashed border*) berlabel *"Kosong"* untuk menjaga keseimbangan kisi layar.
-- Tombol aksi masakan: Toggle status *"Sedang Dimasak"* menjadi tombol hijau *"Tandai Selesai"*.
+### 4.2 Komponen Komposit Bersama (`Components/Shared/`)
+1. **CashPaymentModal (`CashPaymentModal.jsx`)**:
+   - Modal kalkulator pembayaran tunai kasir dengan input pecahan uang cepat (`Rp 50.000`, `Rp 100.000`, `Uang Pas`) dan kalkulasi kembalian otomatis real-time.
+2. **DishDetailModal (`DishDetailModal.jsx`)**:
+   - Modal detail hidangan pelanggan untuk mengatur porsi dan catatan khusus ("tanpa seledri", "pedas level 2").
+3. **ReceiptModal (`ReceiptModal.jsx`)**:
+   - Modal tampilan struk kasir dengan format thermal 58mm/80mm siap cetak (`window.print()`).
+4. **Navbar & Sidebar (`Navbar.jsx`, `Sidebar.jsx`)**:
+   - Komponen navigasi atas dan sidebar staf.
+5. **SearchBar & Pagination (`SearchBar.jsx`, `Pagination.jsx`)**:
+   - Pencarian instan dan navigasi halaman data.
+6. **Toast & OfflineBanner (`Toast.jsx`, `OfflineBanner.jsx`)**:
+   - Penampil notifikasi status transaksi dan peringatan hilangnya koneksi jaringan WebSocket.
 
 ---
 

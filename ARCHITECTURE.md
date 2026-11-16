@@ -1,14 +1,14 @@
 # Arsitektur Sistem MICRODINE
 
 > **Inovasi Platform Manajemen Restoran Terpadu untuk Mendorong Kemandirian Digital Bisnis Mikro Indonesia**  
-> **Versi Dokumen**: 1.0 (Final Architecture Blueprint)  
-> **Tumpukan Teknologi**: Laravel 11.x Monolitik + React 18+ (Inertia.js v2) + PostgreSQL 16+ + Laravel Reverb (WebSockets) + Tailwind CSS
+> **Versi Dokumen**: 1.1 (Aligned with Laravel 13 & React 19 Frontend Implementation)  
+> **Tumpukan Teknologi**: Laravel 13.x Monolitik (PHP 8.3+) + React 19+ (Inertia.js v3) + PostgreSQL 16+ + Laravel Reverb (WebSockets) + Tailwind CSS v4
 
 ---
 
 ## 1. Diagram Arsitektur Sistem Global
 
-MICRODINE mengadopsi arsitektur **Monolitik Terintegrasi (*Single Codebase Monolith*)** yang menggabungkan logika bisnis *backend* (Laravel) dan antarmuka pengguna *Single Page Application* (React) melalui protokol **Inertia.js v2**. Pendekatan ini mengeliminasi kompleksitas pemeliharaan REST API publik terpisah, menjamin integritas transaksi finansial yang ketat, serta memungkinkan komunikasi dua arah seketika (*real-time*) tanpa ketergantungan pada layanan SaaS pihak ketiga berbayar.
+MICRODINE mengadopsi arsitektur **Monolitik Terintegrasi (*Single Codebase Monolith*)** yang menggabungkan logika bisnis *backend* (Laravel) dan antarmuka pengguna *Single Page Application* (React) melalui protokol **Inertia.js v3** (`@inertiajs/react ^3.11.0`). Pendekatan ini mengeliminasi kompleksitas pemeliharaan REST API publik terpisah, menjamin integritas transaksi finansial yang ketat, serta memungkinkan komunikasi dua arah seketika (*real-time*) tanpa ketergantungan pada layanan SaaS pihak ketiga berbayar.
 
 ```mermaid
 graph TD
@@ -143,38 +143,56 @@ MICRODINE/
 │       ├── TableSessionStatus.php     # 'active', 'closed'
 │       └── OrderSource.php            # 'qr', 'manual'
 ├── resources/js/
-│   ├── Layouts/                       # Pembungkus tampilan bersama
-│   │   ├── CustomerLayout.jsx         # Mobile-first wrapper, bottom cart bar
-│   │   └── StaffLayout.jsx            # Sidebar navigasi staf, header, status koneksi
+│   ├── Layouts/                       # Pembungkus tampilan per peran
+│   │   ├── CustomerLayout.jsx         # Mobile-first wrapper, bottom action bar
+│   │   ├── CashierLayout.jsx          # Header kasir, indikator online/offline, navigasi
+│   │   ├── KitchenLayout.jsx          # KDS full-screen bar, status koneksi live
+│   │   └── AdminLayout.jsx            # Sidebar 240px navy, grup navigasi eksekutif
 │   ├── Pages/                         # Komponen Tampilan Inertia per Peran
 │   │   ├── Customer/
-│   │   │   ├── Menu.jsx               # Katalog produk, filter kategori, search
+│   │   │   ├── Menu.jsx               # Katalog produk, filter kategori, search bar
 │   │   │   ├── Cart.jsx               # Keranjang pesanan, ringkasan pajak
 │   │   │   ├── Checkout.jsx           # Form nama, pilih QRIS vs Tunai
+│   │   │   ├── Payment.jsx            # QRIS view, countdown timer 15 menit
 │   │   │   └── OrderStatus.jsx        # Pelacak antrean visual real-time
 │   │   ├── Auth/
-│   │   │   └── Login.jsx              # Portal staf terpusat (Tab Kasir & Admin)
+│   │   │   └── Login.jsx              # Portal staf terpusat (/staf/masuk: Tab Kasir & Admin)
 │   │   ├── Cashier/
 │   │   │   ├── Orders.jsx             # Papan Kanban & Modal Kalkulator Tunai
 │   │   │   ├── Tables.jsx             # Grid meja (Tersedia hijau / Terisi merah)
 │   │   │   └── History.jsx            # Audit harian, panel detail, cetak struk
 │   │   ├── Kitchen/
-│   │   │   └── Display.jsx            # KDS tiket besar, tombol status masakan
-│   │   └── Admin/
-│   │       ├── Dashboard.jsx          # Analitik omzet, HPP, laba 14 hari
-│   │       ├── Menu.jsx               # Master menu & modal kalkulator margin
-│   │       ├── Reports.jsx            # Audit transaksi historis & export
-│   │       ├── Settings.jsx           # Pajak daerah PBJT/PB1 & kelola meja
-│   │       ├── Cashiers.jsx           # CRUD staf kasir
-│   │       └── Targets.jsx            # Target omzet bulanan & proyeksi harian
-│   ├── Components/                    # Komponen UI Atomik & Komposit
-│   │   ├── Common/                    # Button, Badge, Modal, Input, Toast
-│   │   ├── Cashier/CashCalculatorModal.jsx
-│   │   ├── Kitchen/KDSTicketCard.jsx
-│   │   ├── Admin/RevenueLineChart.jsx
-│   │   └── Customer/OrderItemCard.jsx
-│   ├── Echo.js                        # Konfigurasi inisialisasi Laravel Echo
-│   └── app.jsx                        # Entrypoint Vite / Inertia React
+│   │   │   └── Display.jsx            # KDS tiket besar, tombol status masakan (/dapur)
+│   │   ├── Admin/
+│   │   │   ├── Dashboard.jsx          # Analitik omzet, HPP, laba 14 hari
+│   │   │   ├── Menu.jsx               # Master menu & modal kalkulator margin
+│   │   │   ├── Reports.jsx            # Audit transaksi historis & export
+│   │   │   ├── Settings.jsx           # Pajak daerah PBJT/PB1 & kelola meja
+│   │   │   ├── Cashiers.jsx           # CRUD staf kasir
+│   │   │   └── Targets.jsx            # Target omzet bulanan & proyeksi harian
+│   │   └── Welcome.jsx                # Landing page selamat datang & pemilih peran demo
+│   ├── Components/
+│   │   ├── UI/                        # Komponen UI dasar
+│   │   │   ├── Button.jsx, Input.jsx, Card.jsx, Modal.jsx, Table.jsx, Toggle.jsx
+│   │   │   ├── StatCard.jsx, TrendChart.jsx, TargetComparisonChart.jsx
+│   │   │   └── PaymentDistributionChart.jsx, TopSellingList.jsx
+│   │   └── Shared/                    # Komponen komposit domain
+│   │       ├── Navbar.jsx, Sidebar.jsx, CashPaymentModal.jsx, SearchBar.jsx
+│   │       ├── Pagination.jsx, ReceiptModal.jsx, DishDetailModal.jsx
+│   │       └── Toast.jsx, OfflineBanner.jsx
+│   ├── Hooks/                         # Custom React Hooks
+│   │   ├── useCart.js                 # Keranjang belanja & subtotal
+│   │   ├── useCountdown.js            # Timer mundur pembayaran QRIS
+│   │   └── useCurrency.js             # Formatter rupiah integer
+│   ├── Utils/                         # Utility helpers
+│   │   ├── formatters.js              # Format mata uang & tanggal WIB
+│   │   ├── sound.js                   # Efek suara bel tiket pesanan baru
+│   │   └── storage.js                 # LocalStorage persistence wrapper
+│   ├── Data/mock/                     # Mock dataset prototipe UI
+│   │   ├── menus.js, orders.js, reports.js, restaurant.js, staff.js, tables.js
+│   │   └── index.js
+│   ├── Echo.js                        # Konfigurasi inisialisasi Laravel Echo / Reverb
+│   └── app.jsx                        # Entrypoint Vite / Inertia React 19
 ```
 
 ---
@@ -842,69 +860,89 @@ Jika terdeteksi `reverb-disconnected` selama lebih dari 5 detik, komponen React 
 ```php
 // routes/web.php
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
+use App\Http\Controllers\Customer\MenuCatalogController;
+use App\Http\Controllers\Customer\CartController;
+use App\Http\Controllers\Customer\CheckoutController;
+use App\Http\Controllers\Customer\OrderTrackingController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Cashier\KanbanOrderController;
+use App\Http\Controllers\Cashier\TableManagementController;
+use App\Http\Controllers\Cashier\TransactionHistoryController;
+use App\Http\Controllers\Kitchen\KitchenDisplayController;
+use App\Http\Controllers\Admin\DashboardAnalyticsController;
+use App\Http\Controllers\Admin\MenuManagementController;
+use App\Http\Controllers\Admin\FinancialReportController;
+use App\Http\Controllers\Admin\RestaurantSettingsController;
+use App\Http\Controllers\Admin\SalesTargetController;
+use App\Http\Controllers\Webhooks\MidtransWebhookController;
 
-// 1. RUTE PUBLIK PELANGGAN (Mobile-First Self-Ordering)
-Route::middleware(['throttle:60,1'])->group(function () {
-    Route::get('/table/{token}', [MenuCatalogController::class, 'show'])->name('customer.menu');
-    Route::get('/order/cart', [CartController::class, 'index'])->name('customer.cart');
-    Route::get('/order/checkout', [CheckoutController::class, 'show'])->name('customer.checkout');
-    Route::post('/order/checkout', [CheckoutController::class, 'store'])->name('customer.order.store');
-    Route::get('/order/{code}/status', [OrderTrackingController::class, 'show'])->name('customer.order.status');
+// 1. HALAMAN UTAMA / DEMO SELECTOR
+Route::inertia('/', 'Welcome')->name('home');
+
+// 2. RUTE PUBLIK PELANGGAN (Mobile-First Self-Ordering)
+// URL yang dicetak pada stiker QR meja: /meja/{table}, contoh: /meja/07
+Route::prefix('meja/{table}')->where(['table' => '[0-9]{2}'])->name('customer.')->middleware(['throttle:60,1'])->group(function () {
+    Route::get('/', [MenuCatalogController::class, 'show'])->name('menu');
+    Route::get('/keranjang', [CartController::class, 'index'])->name('cart');
+    Route::get('/checkout', [CheckoutController::class, 'show'])->name('checkout');
+    Route::post('/checkout', [CheckoutController::class, 'store'])->name('order.store');
 });
 
-// 2. RUTE AUTENTIKASI PORTAL KARYAWAN TERPUSAT
-Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
-Route::post('/login', [AuthenticatedSessionController::class, 'store'])->middleware('throttle:5,1');
+Route::prefix('pesanan/{code}')->where(['code' => '[A-Z]-[0-9]{3}'])->name('customer.')->middleware(['throttle:60,1'])->group(function () {
+    Route::get('/', [OrderTrackingController::class, 'show'])->name('status');
+    Route::get('/bayar', [CheckoutController::class, 'paymentView'])->name('payment');
+});
+
+// 3. RUTE AUTENTIKASI PORTAL KARYAWAN TERPUSAT
+Route::get('/staf/masuk', [AuthenticatedSessionController::class, 'create'])->name('login');
+Route::post('/staf/masuk', [AuthenticatedSessionController::class, 'store'])->middleware('throttle:5,1');
 Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
-// 3. RUTE STAF KASIR (Role: kasir atau admin)
-Route::middleware(['auth', 'role:kasir,admin'])->prefix('cashier')->group(function () {
-    Route::get('/orders', [KanbanOrderController::class, 'index'])->name('cashier.orders');
-    Route::post('/orders/{id}/pay-cash', [KanbanOrderController::class, 'payCash'])->name('cashier.orders.pay-cash');
-    Route::post('/orders/{id}/serve', [KanbanOrderController::class, 'markServed'])->name('cashier.orders.serve');
-    Route::post('/orders/{id}/cancel', [KanbanOrderController::class, 'cancel'])->name('cashier.orders.cancel');
-    Route::post('/orders/manual', [KanbanOrderController::class, 'storeManualOrder'])->name('cashier.orders.manual');
+// 4. RUTE STAF KASIR (Role: kasir atau admin)
+Route::middleware(['auth', 'role:kasir,admin'])->prefix('kasir')->name('cashier.')->group(function () {
+    Route::get('/', [KanbanOrderController::class, 'dashboard'])->name('dashboard');
+    Route::get('/pesanan', [KanbanOrderController::class, 'index'])->name('orders');
+    Route::post('/pesanan/{id}/pay-cash', [KanbanOrderController::class, 'payCash'])->name('orders.pay-cash');
+    Route::post('/pesanan/{id}/serve', [KanbanOrderController::class, 'markServed'])->name('orders.serve');
+    Route::post('/pesanan/{id}/cancel', [KanbanOrderController::class, 'cancel'])->name('orders.cancel');
+    Route::post('/pesanan/manual', [KanbanOrderController::class, 'storeManualOrder'])->name('orders.manual');
     
-    Route::get('/tables', [TableManagementController::class, 'index'])->name('cashier.tables');
-    Route::post('/tables/{sessionId}/close', [TableManagementController::class, 'closeSession'])->name('cashier.tables.close');
+    Route::get('/meja', [TableManagementController::class, 'index'])->name('tables');
+    Route::post('/meja/{sessionId}/close', [TableManagementController::class, 'closeSession'])->name('tables.close');
     
-    Route::get('/history', [TransactionHistoryController::class, 'index'])->name('cashier.history');
-    Route::get('/orders/{id}/receipt', [TransactionHistoryController::class, 'printReceipt'])->name('cashier.orders.receipt');
+    Route::get('/histori', [TransactionHistoryController::class, 'index'])->name('history');
+    Route::get('/pesanan/{id}/receipt', [TransactionHistoryController::class, 'printReceipt'])->name('orders.receipt');
 });
 
-// 4. RUTE MONITOR DAPUR (Role: dapur, kasir, atau admin)
-Route::middleware(['auth', 'role:dapur,kasir,admin'])->prefix('kitchen')->group(function () {
-    Route::get('/display', [KitchenDisplayController::class, 'index'])->name('kitchen.display');
-    Route::patch('/orders/{id}/status', [KitchenDisplayController::class, 'updateStatus'])->name('kitchen.orders.update-status');
+// 5. RUTE MONITOR DAPUR (Role: dapur, kasir, atau admin)
+Route::middleware(['auth', 'role:dapur,kasir,admin'])->prefix('dapur')->name('kitchen.')->group(function () {
+    Route::get('/', [KitchenDisplayController::class, 'index'])->name('display');
+    Route::patch('/pesanan/{id}/status', [KitchenDisplayController::class, 'updateStatus'])->name('orders.update-status');
 });
 
-// 5. RUTE EKSEKUTIF ADMINISTRATOR (Role: admin murni)
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
-    Route::get('/dashboard', [DashboardAnalyticsController::class, 'index'])->name('admin.dashboard');
+// 6. RUTE EKSEKUTIF ADMINISTRATOR (Role: admin murni)
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/', [DashboardAnalyticsController::class, 'index'])->name('dashboard');
     
-    Route::get('/menus', [MenuManagementController::class, 'index'])->name('admin.menus');
-    Route::post('/menus', [MenuManagementController::class, 'store'])->name('admin.menus.store');
-    Route::put('/menus/{id}', [MenuManagementController::class, 'update'])->name('admin.menus.update');
-    Route::delete('/menus/{id}', [MenuManagementController::class, 'destroy'])->name('admin.menus.destroy');
-    Route::patch('/menus/{id}/toggle-availability', [MenuManagementController::class, 'toggleAvailability']);
+    Route::get('/menu', [MenuManagementController::class, 'index'])->name('menus');
+    Route::post('/menu', [MenuManagementController::class, 'store'])->name('menus.store');
+    Route::put('/menu/{id}', [MenuManagementController::class, 'update'])->name('menus.update');
+    Route::delete('/menu/{id}', [MenuManagementController::class, 'destroy'])->name('menus.destroy');
+    Route::patch('/menu/{id}/toggle-availability', [MenuManagementController::class, 'toggleAvailability'])->name('menus.toggle');
     
-    Route::get('/reports', [FinancialReportController::class, 'index'])->name('admin.reports');
-    Route::get('/reports/export', [FinancialReportController::class, 'export'])->name('admin.reports.export');
+    Route::get('/laporan', [FinancialReportController::class, 'index'])->name('reports');
+    Route::get('/laporan/export', [FinancialReportController::class, 'export'])->name('reports.export');
     
-    Route::get('/settings', [RestaurantSettingsController::class, 'index'])->name('admin.settings');
-    Route::put('/settings', [RestaurantSettingsController::class, 'update'])->name('admin.settings.update');
-    Route::post('/settings/tables', [RestaurantSettingsController::class, 'storeTable'])->name('admin.settings.tables.store');
-    
-    Route::get('/cashiers', [CashierAccountController::class, 'index'])->name('admin.cashiers');
-    Route::post('/cashiers', [CashierAccountController::class, 'store'])->name('admin.cashiers.store');
-    Route::put('/cashiers/{id}', [CashierAccountController::class, 'update'])->name('admin.cashiers.update');
-    Route::delete('/cashiers/{id}', [CashierAccountController::class, 'destroy'])->name('admin.cashiers.destroy');
-    
-    Route::get('/targets', [SalesTargetController::class, 'index'])->name('admin.targets');
-    Route::post('/targets', [SalesTargetController::class, 'store'])->name('admin.targets.store');
+    Route::get('/target', [SalesTargetController::class, 'index'])->name('targets');
+    Route::post('/target', [SalesTargetController::class, 'store'])->name('targets.store');
+
+    Route::get('/pengaturan', [RestaurantSettingsController::class, 'index'])->name('settings');
+    Route::put('/pengaturan', [RestaurantSettingsController::class, 'update'])->name('settings.update');
+    Route::post('/pengaturan/meja', [RestaurantSettingsController::class, 'storeTable'])->name('settings.tables.store');
 });
 
-// 6. RUTE WEBHOOK PEMBAYARAN GATEWAY (Exempt CSRF)
+// 7. RUTE WEBHOOK PEMBAYARAN GATEWAY (Exempt CSRF)
 Route::post('/api/v1/payments/midtrans/webhook', [MidtransWebhookController::class, 'handle'])
     ->name('payments.midtrans.webhook');
 ```

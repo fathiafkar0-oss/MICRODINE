@@ -10,6 +10,7 @@ import Button from '@/Components/UI/Button';
 import Modal from '@/Components/UI/Modal';
 import { orders as mockOrders } from '@/Data/mock/orders';
 import { tables as mockTables } from '@/Data/mock/tables';
+import useLiveReload from '@/Hooks/useLiveReload';
 import CashierLayout from '@/Layouts/CashierLayout';
 import { cx } from '@/Utils/classNames';
 import { withSessions } from '@/Utils/tables';
@@ -27,6 +28,7 @@ export default function CashierTables({ tables: tableProp, appUrl = typeof windo
     const [closingBusy, setClosingBusy] = useState(false);
     const { unservedCount } = usePage().props.flash ?? {};
     const free = tables.filter((table) => table.status === 'tersedia').length;
+    useLiveReload('cashier.tables', ['.table-session.updated'], ['tables']);
 
     // Props `tables` diperbarui setiap halaman ini dimuat ulang Inertia (mis.
     // setelah `closeSession` sukses, atau siaran WebSocket memicu router.reload()).

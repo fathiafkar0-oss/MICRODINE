@@ -4,6 +4,8 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="theme-color" content="#0A1D4B">
+        {{-- Modul G: dibaca Laravel Echo untuk otorisasi private channel (POST /broadcasting/auth). --}}
+        <meta name="csrf-token" content="{{ csrf_token() }}">
 
         @viteReactRefresh
         @vite(['resources/css/app.css', 'resources/js/app.jsx'])

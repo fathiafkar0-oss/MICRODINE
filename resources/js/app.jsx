@@ -1,6 +1,7 @@
 import { createInertiaApp } from '@inertiajs/react';
 import { Toaster } from 'react-hot-toast';
 
+import '@/echo';
 import useFlashToast from '@/Hooks/useFlashToast';
 
 const appName = import.meta.env.VITE_APP_NAME || 'MICRODINE';

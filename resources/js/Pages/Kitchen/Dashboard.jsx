@@ -1,33 +1,43 @@
+import { router } from '@inertiajs/react';
 import { CircleCheck, Flame } from 'lucide-react';
-import { useState } from 'react';
-import toast from 'react-hot-toast';
+import { useEffect, useState } from 'react';
 
 import StatCard from '@/Components/UI/StatCard';
 import { orders as mockOrders } from '@/Data/mock/orders';
+import useLiveReload from '@/Hooks/useLiveReload';
 import KitchenLayout from '@/Layouts/KitchenLayout';
 import KitchenTicket from '@/Pages/Kitchen/Partials/KitchenTicket';
 
 /**
- * Layar dapur (Kitchen Display System): hanya pesanan yang sudah LUNAS.
+ * Layar dapur (Kitchen Display System) — biasanya ditampilkan di TV dapur.
  * Route: GET /dapur
- * Real-time: pesanan baru masuk lewat event WebSocket saat status berubah menjadi Diproses.
- * Backend: PATCH /dapur/pesanan/{code}/selesai
+ * Real-time: `useLiveReload` dengarkan channel privat "kitchen.kds" (lihat
+ * routes/channels.php & app/Events/OrderPaidEvent + KitchenStatusUpdatedEvent)
+ * lalu muat ulang props `orders`/`doneToday` otomatis — tanpa refresh manual.
+ * Backend: PATCH /dapur/pesanan/{id}/status { status: 'done' }
  */
 export default function KitchenDashboard({ orders: initial = mockOrders.filter((order) => order.status === 'diproses'), doneToday = 27 }) {
     const [orders, setOrders] = useState(initial);
-    const [done, setDone] = useState(doneToday);
+    const [busyCode, setBusyCode] = useState(null);
+    useLiveReload('kitchen.kds', ['.order.paid', '.order.kitchen-status-updated'], ['orders', 'doneToday']);
+
+    // Props `orders`/`doneToday` berganti setiap halaman ini dimuat ulang
+    // (termasuk oleh `useLiveReload` di atas).
+    useEffect(() => {
+        setOrders(initial);
+    }, [initial]);
+
     const sorted = [...orders].sort((a, b) => b.minutesAgo - a.minutesAgo);
 
     const markDone = (order) => {
-        setOrders((prev) => prev.filter((item) => item.code !== order.code));
-        setDone((value) => value + 1);
-        toast.success(`${order.code} selesai · kasir & pelanggan diberi tahu`);
+        setBusyCode(order.code);
+        router.patch(`/dapur/pesanan/${order.id}/status`, { status: 'done' }, { preserveScroll: true, onFinish: () => setBusyCode(null) });
     };
 
     const summary = (
         <div className="stagger grid gap-3 text-ink sm:grid-cols-2 lg:w-1/2">
             <StatCard icon={Flame} tone="warn" label="Sedang diproses" value={orders.length} className="border-transparent" />
-            <StatCard icon={CircleCheck} tone="success" label="Selesai hari ini" value={done} className="border-transparent" />
+            <StatCard icon={CircleCheck} tone="success" label="Selesai hari ini" value={doneToday} className="border-transparent" />
         </div>
     );
 
@@ -50,7 +60,7 @@ export default function KitchenDashboard({ orders: initial = mockOrders.filter((
             ) : (
                 <div className="stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
                     {sorted.map((order) => (
-                        <KitchenTicket key={order.code} order={order} onDone={markDone} />
+                        <KitchenTicket key={order.code} order={order} onDone={markDone} busy={busyCode === order.code} />
                     ))}
                 </div>
             )}

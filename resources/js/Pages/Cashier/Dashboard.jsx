@@ -13,6 +13,7 @@ import StatCard from '@/Components/UI/StatCard';
 import { orders as mockOrders } from '@/Data/mock/orders';
 import { restaurant as mockRestaurant } from '@/Data/mock/restaurant';
 import useCurrency from '@/Hooks/useCurrency';
+import useLiveReload from '@/Hooks/useLiveReload';
 import CashierLayout from '@/Layouts/CashierLayout';
 import { cx } from '@/Utils/classNames';
 import { formatLongDate } from '@/Utils/formatDate';
@@ -36,9 +37,10 @@ export default function CashierDashboard({ orders: initialOrders = mockOrders, r
     const [cashOrder, setCashOrder] = useState(null);
     const [busyCode, setBusyCode] = useState(null);
     const { format, taxRate } = useCurrency(restaurant);
+    useLiveReload('cashier.orders', ['.order.paid', '.order.kitchen-status-updated', '.order.cancelled'], ['orders', 'stats']);
 
     // Props `orders` berganti setiap Inertia memuat ulang halaman ini (mis. setelah
-    // redirect `back()` dari aksi di bawah, atau siaran WebSocket memicu router.reload()).
+    // redirect `back()` dari aksi di bawah, atau siaran WebSocket lewat `useLiveReload`).
     useEffect(() => {
         setOrders(initialOrders);
     }, [initialOrders]);

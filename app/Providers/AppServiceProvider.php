@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Services\Gateways\MidtransPaymentGateway;
 use App\Services\Gateways\PaymentGatewayInterface;
 use App\Services\Gateways\SimulatedPaymentGateway;
+use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -35,6 +36,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Modul G (Real-Time): otorisasi private channel (lihat
+        // routes/channels.php) diakses Laravel Echo lewat POST ke
+        // `/broadcasting/auth`, dikunci sesi staf yang sedang login.
+        Broadcast::routes(['middleware' => ['web', 'auth']]);
     }
 }

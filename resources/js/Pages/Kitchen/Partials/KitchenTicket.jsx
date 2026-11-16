@@ -9,7 +9,7 @@ import { isAddition } from '@/Utils/status';
 export const LATE_AFTER_MINUTES = 15;
 
 /** Tiket pesanan di layar dapur: huruf besar, catatan menonjol, tombol selesai lebar. */
-export default function KitchenTicket({ order, onDone }) {
+export default function KitchenTicket({ order, onDone, busy = false }) {
     const late = order.minutesAgo >= LATE_AFTER_MINUTES;
 
     return (
@@ -48,10 +48,11 @@ export default function KitchenTicket({ order, onDone }) {
             <button
                 type="button"
                 onClick={() => onDone(order)}
-                className="mt-4 inline-flex h-14 items-center justify-center gap-2 rounded-[16px] bg-gold text-base font-extrabold text-obsidian shadow-[0_10px_22px_-12px_rgba(204,158,74,0.9)] transition hover:bg-gold-hover active:scale-[0.97]"
+                disabled={busy}
+                className="mt-4 inline-flex h-14 items-center justify-center gap-2 rounded-[16px] bg-gold text-base font-extrabold text-obsidian shadow-[0_10px_22px_-12px_rgba(204,158,74,0.9)] transition hover:bg-gold-hover active:scale-[0.97] disabled:opacity-50"
             >
                 <CircleCheck className="h-5 w-5" aria-hidden="true" />
-                Tandai Selesai
+                {busy ? 'Memproses…' : 'Tandai Selesai'}
             </button>
         </article>
     );

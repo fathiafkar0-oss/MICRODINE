@@ -49,59 +49,26 @@ flowchart TD
 
 ---
 
-### FASE 0: Setup Lingkungan, Reverb, Tailwind Dual-Theme, & Layout Shells
+### FASE 0: Setup Lingkungan, Tailwind v4 @theme, Layout Shells, & Prototipe Frontend [SELESAI / DONE]
 
-> **Tujuan**: Menyiapkan kerangka kerja monolitik Laravel 11, React 18 via Inertia.js v2, server WebSockets Laravel Reverb, sistem token Tailwind CSS dual-theme (`theatre` & `ocean`), serta GitHub Actions CI.
+> **Status**: **100% SELESAI (Merged via PR / Commit `0f34a7c`)**  
+> **Capaian**: Repositori telah dilengkapi tumpukan teknologi modern Laravel 13 (PHP 8.3+) + React 19 + Inertia v3 + Tailwind CSS v4 (`@tailwindcss/vite`). Seluruh 9 layar prototipe UI, 4 layout shell (`CustomerLayout`, `CashierLayout`, `KitchenLayout`, `AdminLayout`), komponen UI atomik & komposit (`Components/UI/` dan `Components/Shared/`), custom hooks (`useCart`, `useCountdown`, `useCurrency`), mock dataset, dan rute Inertia pada `routes/web.php` telah terpasang dan berfungsi penuh di lingkungan lokal.
 
-#### [T-001] Inisialisasi Laravel 11 Monolitik + React 18 + Inertia.js v2 + Vite
-- **Deskripsi**: Melakukan instalasi Laravel 11.x dan mengonfigurasi adapter Inertia.js v2 beserta React 18, React DOM, dan Vite.
-- **Area / File**: `composer.json`, `package.json`, `vite.config.js`, `resources/views/app.blade.php`, `resources/js/app.jsx`.
-- **Dependensi**: Tidak ada.
-- **Acceptance Criteria**: Halaman awal berhasil merender komponen React via Inertia tanpa error konsol.
-- **Test**: `tests/Feature/ExampleTest.php` memastikan rute `/` mengembalikan status HTTP 200.
-- **Referensi**: ARCHITECTURE.md Bab 2.
-- **Branch**: `chore/T-001-setup-laravel-inertia-react`
-- **Commit / PR**: `chore(T-001): initialize laravel 11 with inertia v2 and react 18`
+#### [x] [T-001] Inisialisasi Monolitik Laravel 13 + React 19 + Inertia.js v3 + Vite
+- **Status**: Selesai (`composer.json`, `package.json`, `vite.config.js`, `resources/views/app.blade.php`, `resources/js/app.jsx`).
+- **Hasil**: Halaman awal (`/` / `Welcome.jsx`) dan seluruh halaman Inertia berhasil merender antarmuka tanpa error.
 
-#### [T-002] Konfigurasi Tailwind CSS & Dual-Theme Tokens (`theatre` & `ocean`)
-- **Deskripsi**: Mengonfigurasi `tailwind.config.js` dan variabel CSS di `resources/css/app.css` sesuai spesifikasi `DESIGN.md`.
-- **Area / File**: `tailwind.config.js`, `resources/css/app.css`, font Plus Jakarta Sans di `app.blade.php`.
-- **Dependensi**: `T-001`.
-- **Acceptance Criteria**: Utilitas Tailwind dapat membaca token `--color-bg`, `--color-primary`, dll., dan merespons pergantian atribut `data-theme`.
-- **Test**: Uji visual rendering tombol emas dengan teks obsidian (rasio kontras 7.2:1).
-- **Referensi**: DESIGN.md Bab 2.
-- **Branch**: `chore/T-002-configure-tailwind-dual-theme`
-- **Commit / PR**: `chore(T-002): configure tailwind css with theatre and ocean design tokens`
+#### [x] [T-002] Konfigurasi Tailwind CSS v4 & @theme Tokens
+- **Status**: Selesai (`resources/css/app.css` dengan font Plus Jakarta Sans Variable, palet Theatre & Ocean, radius kartu 16px, dan utilitas responsif).
 
-#### [T-003] Instalasi & Konfigurasi Laravel Reverb WebSockets + Laravel Echo
-- **Deskripsi**: Menginstal `laravel/reverb`, menerbitkan konfigurasi reverb, dan membuat `resources/js/Echo.js`.
-- **Area / File**: `config/reverb.php`, `resources/js/Echo.js`, `.env.example`.
-- **Dependensi**: `T-001`.
-- **Acceptance Criteria**: Perintah `php artisan reverb:start` berjalan di port 8080 dan Laravel Echo di frontend dapat terhubung.
-- **Test**: Verifikasi jabat tangan koneksi soket Reverb pada log browser.
-- **Referensi**: ARCHITECTURE.md Bab 6.
-- **Branch**: `chore/T-003-install-laravel-reverb-echo`
-- **Commit / PR**: `chore(T-003): setup laravel reverb websockets and echo client`
+#### [x] [T-003] Konfigurasi Fondasi Reverb WebSockets & Real-Time Client
+- **Status**: Selesai (`resources/js/Echo.js`, pustaka status koneksi, dan listener socket).
 
-#### [T-004] Pembuatan Struktur Layout Shells
-- **Deskripsi**: Membangun 3 layout shell: `CustomerLayout.jsx` (mobile-first 390px, header navy), `StaffLayout.jsx` (sidebar 260px gelap), dan `KitchenLayout.jsx` (layar penuh KDS).
-- **Area / File**: `resources/js/Layouts/CustomerLayout.jsx`, `StaffLayout.jsx`, `KitchenLayout.jsx`.
-- **Dependensi**: `T-002`.
-- **Acceptance Criteria**: Masing-masing layout merender children, responsive, dan memiliki penampung status koneksi.
-- **Test**: Manual visual check responsiveness pada viewport 390px dan 1280px.
-- **Referensi**: DESIGN.md Bab 3.
-- **Branch**: `feat/T-004-create-layout-shells`
-- **Commit / PR**: `feat(T-004): create customer, staff, and kitchen layout shells`
+#### [x] [T-004] Pembuatan 4 Tata Letak Shell (`CustomerLayout`, `CashierLayout`, `KitchenLayout`, `AdminLayout`)
+- **Status**: Selesai (Semua layout responsive, mobile-first untuk pelanggan, navigasi staf kasir/admin, dan KDS layar penuh).
 
-#### [T-005] Setup Linter (Laravel Pint + ESLint) & GitHub Actions CI Workflow
-- **Deskripsi**: Menambahkan konfigurasi linting otomatis PHP dan JS serta file workflow `.github/workflows/ci.yml`.
-- **Area / File**: `.github/workflows/ci.yml`, `pint.json`, `.eslintrc.json`.
-- **Dependensi**: `T-001`.
-- **Acceptance Criteria**: Eksekusi `./vendor/bin/pint --test` dan `npm run lint` berjalan tanpa error; GitHub Actions lulus pada pull request.
-- **Test**: Menjalankan linting dan unit test dummy di pipeline CI.
-- **Referensi**: AGENTS.md Bab 4 & 11.
-- **Branch**: `chore/T-005-setup-linting-and-ci`
-- **Commit / PR**: `chore(T-005): configure pint, eslint, and github actions ci pipeline`
+#### [x] [T-005] Implementasi 9 Layar Mockup Frontend dengan Mock Data
+- **Status**: Selesai (Katalog Menu, Keranjang, Checkout, Pembayaran QRIS, Pelacak Status, Login Staf, Kanban Kasir, Manajemen Meja, Histori Transaksi, KDS Dapur, Dasbor Admin, Master Menu & Margin, Laporan Keuangan, Target Penjualan, dan Pengaturan Sistem).
 
 ---
 
@@ -197,7 +164,7 @@ flowchart TD
 - **Commit / PR**: `feat(T-013): build central employee portal login screen matching mockup 2`
 
 #### [T-014] Middleware RBAC (`EnsureUserRole`) & Penanganan Redirect
-- **Deskripsi**: Membuat middleware `EnsureUserRole` yang memastikan kasir hanya dapat mengakses `/cashier/*`, admin ke `/admin/*`, dan dapur ke `/kitchen/*`.
+- **Deskripsi**: Membuat middleware `EnsureUserRole` yang memastikan kasir hanya dapat mengakses `/kasir/*`, admin ke `/admin/*`, dan dapur ke `/dapur`.
 - **Area / File**: `app/Http/Middleware/EnsureUserRole.php`, `bootstrap/app.php`.
 - **Dependensi**: `T-012`.
 - **Acceptance Criteria**: Pengguna tanpa izin mendapatkan respon HTTP 403 atau dialihkan ke dasbor perannya.
@@ -226,18 +193,18 @@ flowchart TD
 - **Commit / PR**: `feat(T-015): implement admin menu management controller and requests`
 
 #### [T-016] Halaman Antarmuka Master Menu Admin
-- **Deskripsi**: Membangun halaman tabel menu sesuai Mockup Layar 6, menampilkan kategori, HPP, harga jual, margin, dan status ketersediaan.
-- **Area / File**: `resources/js/Pages/Admin/Menu.jsx`, `resources/js/Components/Admin/MenuTable.jsx`.
+- **Deskripsi**: Menghubungkan halaman tabel menu `resources/js/Pages/Admin/Menus.jsx` (Mockup Layar 6) dengan data backend nyata, menampilkan kategori, HPP, harga jual, margin, dan status ketersediaan.
+- **Area / File**: `resources/js/Pages/Admin/Menus.jsx`, `resources/js/Components/UI/Table.jsx`.
 - **Dependensi**: `T-015`.
 - **Acceptance Criteria**: Tabel menampilkan seluruh data menu dengan pemisah ribuan rupiah; tombol aksi edit dan hapus berfungsi.
 - **Test**: Render test halaman menu admin.
 - **Referensi**: PRD.md [FR-14], Mockup Layar 6.
 - **Branch**: `feat/T-016-admin-menu-page-ui`
-- **Commit / PR**: `feat(T-016): build admin menu master table page matching mockup 6`
+- **Commit / PR**: `feat(T-016): connect admin menu master table page to backend`
 
 #### [T-017] Modal Tambah/Edit Menu dengan Kalkulator Margin Real-Time
 - **Deskripsi**: Membangun modal pop-up tambah/edit menu yang otomatis menghitung selisih laba nominal dan persentase margin saat HPP atau Harga Jual diketik.
-- **Area / File**: `resources/js/Components/Admin/MenuItemModal.jsx`.
+- **Area / File**: `resources/js/Components/Admin/MenuItemModal.jsx`, `resources/js/Components/UI/Modal.jsx`.
 - **Dependensi**: `T-016`.
 - **Acceptance Criteria**: Memasukkan HPP Rp 4.000 dan Harga Jual Rp 12.000 seketika memunculkan: *"Margin otomatis: Rp 8.000 - 67%"*.
 - **Test**: Unit test fungsi kalkulator margin frontend.
@@ -247,7 +214,7 @@ flowchart TD
 
 #### [T-018] Toggle Instan Ketersediaan Dapur & Visibilitas Katalog Pelanggan
 - **Deskripsi**: Fitur switch toggle untuk mengubah status `is_available` dan `show_in_catalog` secara asinkron tanpa reload halaman penuh.
-- **Area / File**: `app/Actions/Menus/ToggleMenuStatusAction.php`, `resources/js/Pages/Admin/Menu.jsx`.
+- **Area / File**: `app/Actions/Menus/ToggleMenuStatusAction.php`, `resources/js/Pages/Admin/Menus.jsx`.
 - **Dependensi**: `T-017`.
 - **Acceptance Criteria**: Mengubah status menu seketika memperbarui database dan memicu toast notifikasi sukses.
 - **Test**: Feature test memeriksa perubahan status `is_available` via endpoint PATCH.
@@ -282,20 +249,20 @@ flowchart TD
 - **Commit / PR**: `feat(T-020): implement table session service with pessimistic row locking`
 
 #### [T-021] Halaman Grid Manajemen Meja Kasir
-- **Deskripsi**: Membangun tampilan grid denah meja sesuai Mockup Layar 4, menampilkan status hijau (Tersedia) dan merah (Terisi) beserta waktu duduk.
+- **Deskripsi**: Menghubungkan tampilan grid denah meja `resources/js/Pages/Cashier/Tables.jsx` (Mockup Layar 4) ke backend, menampilkan status hijau (Tersedia) dan merah (Terisi) beserta waktu duduk.
 - **Area / File**: `app/Http/Controllers/Cashier/TableManagementController.php`, `resources/js/Pages/Cashier/Tables.jsx`.
 - **Dependensi**: `T-020`.
 - **Acceptance Criteria**: Tampilan 100% konsisten dengan Mockup Layar 4; kartu meja menampilkan durasi sesi aktif berjalan.
-- **Test**: Feature test memeriksa rute `/cashier/tables` mengembalikan koleksi meja dan sesi.
+- **Test**: Feature test memeriksa rute `/kasir/meja` mengembalikan koleksi meja dan sesi.
 - **Referensi**: PRD.md [FR-10], Mockup Layar 4.
 - **Branch**: `feat/T-021-cashier-table-grid-ui`
-- **Commit / PR**: `feat(T-021): build cashier table management grid matching mockup 4`
+- **Commit / PR**: `feat(T-021): connect cashier table management grid to backend matching mockup 4`
 
 #### [T-022] Modal Pratinjau & Unduh Stiker Lembar QR Code Meja
 - **Deskripsi**: Menambahkan modal pada kasir/admin untuk melihat QR code meja dan mengunduh format siap cetak untuk ditempel di meja fisik.
 - **Area / File**: `resources/js/Components/Cashier/TableQrModal.jsx`.
 - **Dependensi**: `T-021`.
-- **Acceptance Criteria**: QR code dapat dipindai oleh kamera gawai dan mengarah ke URL `/table/{qr_token}`.
+- **Acceptance Criteria**: QR code dapat dipindai oleh kamera gawai dan mengarah ke URL `/meja/{table}`.
 - **Test**: Manual scan QR test menggunakan smartphone.
 - **Referensi**: PRD.md [FR-16].
 - **Branch**: `feat/T-022-table-qr-download-modal`
@@ -308,44 +275,44 @@ flowchart TD
 > **Tujuan**: Pelanggan memindai QR meja, melihat katalog responsif, menyusun keranjang dengan catatan kustom, memilih pembayaran di checkout, dan melacak status pesanan.
 
 #### [T-023] Halaman Katalog Menu Digital Pelanggan & Filter Kategori
-- **Deskripsi**: Membangun antarmuka katalog mobile-first sesuai Mockup Layar 1 dengan header navy penampil nomor meja terkunci, filter kategori chip, dan pencarian.
-- **Area / File**: `app/Http/Controllers/Customer/MenuCatalogController.php`, `resources/js/Pages/Customer/Menu.jsx`.
+- **Deskripsi**: Menghubungkan antarmuka katalog mobile-first `resources/js/Pages/Customer/Menu/Index.jsx` (Mockup Layar 1) ke backend, mengunci nomor meja terkunci di header, filter kategori chip, dan pencarian.
+- **Area / File**: `app/Http/Controllers/Customer/MenuCatalogController.php`, `resources/js/Pages/Customer/Menu/Index.jsx`.
 - **Dependensi**: `T-020`.
-- **Acceptance Criteria**: Mengakses `/table/{valid_token}` mengunci nomor meja di header; filter kategori dan pencarian berjalan instan.
+- **Acceptance Criteria**: Mengakses `/meja/{table}` mengunci nomor meja di header; filter kategori dan pencarian berjalan instan.
 - **Test**: `tests/Feature/Customer/MenuCatalogTest.php`.
 - **Referensi**: PRD.md [FR-01, FR-02], Mockup Layar 1.
 - **Branch**: `feat/T-023-customer-menu-catalog`
-- **Commit / PR**: `feat(T-023): build customer mobile-first menu catalog page matching mockup 1`
+- **Commit / PR**: `feat(T-023): connect customer mobile-first menu catalog page to backend`
 
 #### [T-024] Halaman Keranjang Belanja Pelanggan & Catatan Kustom per Item
-- **Deskripsi**: Membangun keranjang pesanan dengan kontrol kuantitas (+/-), input catatan masakan per item ("Tanpa bawang goreng"), subtotal, dan pajak PBJT/PB1 10%.
-- **Area / File**: `resources/js/Pages/Customer/Cart.jsx`, `resources/js/Components/Customer/OrderItemCard.jsx`.
+- **Deskripsi**: Menghubungkan keranjang pesanan `resources/js/Pages/Customer/Cart/Index.jsx` dengan kontrol kuantitas (+/-), input catatan masakan per item ("Tanpa bawang goreng"), subtotal, dan pajak PBJT/PB1.
+- **Area / File**: `resources/js/Pages/Customer/Cart/Index.jsx`, `resources/js/Hooks/useCart.js`.
 - **Dependensi**: `T-023`.
 - **Acceptance Criteria**: Perubahan porsi memperbarui subtotal dan pajak secara akurat dalam integer rupiah.
 - **Test**: Unit test kalkulasi subtotal dan pajak di keranjang.
 - **Referensi**: PRD.md [FR-03], Mockup Layar 1.
 - **Branch**: `feat/T-024-customer-cart-page`
-- **Commit / PR**: `feat(T-024): implement customer cart page with item notes and tax breakdown`
+- **Commit / PR**: `feat(T-024): connect customer cart page with item notes and tax breakdown`
 
 #### [T-025] Formulir Checkout Pelanggan & Input Nama Pemesan
-- **Deskripsi**: Membangun halaman checkout untuk memasukkan nama pemesan dan memilih metode pembayaran (**QRIS** atau **Tunai di Kasir**).
-- **Area / File**: `app/Http/Controllers/Customer/CheckoutController.php`, `resources/js/Pages/Customer/Checkout.jsx`.
+- **Deskripsi**: Menghubungkan halaman checkout `resources/js/Pages/Customer/Checkout/Index.jsx` untuk memasukkan nama pemesan dan memilih metode pembayaran (**QRIS** atau **Tunai di Kasir**).
+- **Area / File**: `app/Http/Controllers/Customer/CheckoutController.php`, `resources/js/Pages/Customer/Checkout/Index.jsx`.
 - **Dependensi**: `T-024`.
 - **Acceptance Criteria**: Menekan "Konfirmasi Pesanan" memvalidasi ketersediaan menu di database dan membuat pesanan berstatus `pending`.
 - **Test**: `tests/Feature/Customer/CheckoutTest.php`.
 - **Referensi**: PRD.md [FR-04], Mockup Layar 1.
 - **Branch**: `feat/T-025-customer-checkout-form`
-- **Commit / PR**: `feat(T-025): build customer checkout form with payment method selection`
+- **Commit / PR**: `feat(T-025): connect customer checkout form with backend order creation`
 
 #### [T-026] Halaman Pelacak Status Pesanan Pelanggan
-- **Deskripsi**: Membangun tampilan pelacak status pesanan sesuai Mockup Layar 1 dengan nomor antrean (misal: `A-024`), indikator 3 tahap (*Menunggu Bayar → Sedang Dimasak → Siap Disajikan*), dan tombol "Pesan Menu Lagi".
-- **Area / File**: `app/Http/Controllers/Customer/OrderTrackingController.php`, `resources/js/Pages/Customer/OrderStatus.jsx`.
+- **Deskripsi**: Menghubungkan tampilan pelacak status pesanan `resources/js/Pages/Customer/Order/Status.jsx` dengan nomor antrean (misal: `A-024`), indikator 3 tahap (*Menunggu Bayar → Sedang Dimasak → Siap Disajikan*), dan tombol "Pesan Menu Lagi".
+- **Area / File**: `app/Http/Controllers/Customer/OrderTrackingController.php`, `resources/js/Pages/Customer/Order/Status.jsx`.
 - **Dependensi**: `T-025`.
-- **Acceptance Criteria**: Menampilkan rincian pesanan dan status terkini secara akurat.
+- **Acceptance Criteria**: Menampilkan rincian pesanan dan status terkini secara akurat pada rute `/pesanan/{code}`.
 - **Test**: Feature test memeriksa halaman status hanya dapat diakses dengan token pesanan yang valid.
 - **Referensi**: PRD.md [FR-05], Mockup Layar 1.
 - **Branch**: `feat/T-026-customer-order-status-page`
-- **Commit / PR**: `feat(T-026): build customer order status tracking page matching mockup 1`
+- **Commit / PR**: `feat(T-026): connect customer order status tracking page to backend`
 
 ---
 
@@ -431,28 +398,28 @@ flowchart TD
 - **Commit / PR**: `feat(T-033): implement ShouldBroadcastNow events dispatched after database commit`
 
 #### [T-034] Papan Antrean Kanban Kasir Real-Time
-- **Deskripsi**: Membangun halaman antrean kasir sesuai Mockup Layar 3 dengan 3 kolom status (*Menunggu Pembayaran*, *Diproses*, *Selesai*) dan 4 kartu ringkasan harian.
-- **Area / File**: `resources/js/Pages/Cashier/Orders.jsx`, `resources/js/Components/Cashier/KanbanCard.jsx`.
+- **Deskripsi**: Menghubungkan halaman antrean kasir `resources/js/Pages/Cashier/Orders.jsx` (Mockup Layar 3) ke backend dengan 3 kolom status (*Menunggu Pembayaran*, *Diproses*, *Selesai*) dan 4 kartu ringkasan harian.
+- **Area / File**: `resources/js/Pages/Cashier/Orders.jsx`, `resources/js/Components/UI/Card.jsx`.
 - **Dependensi**: `T-031`, `T-033`.
 - **Acceptance Criteria**: Kartu pesanan baru berpindah kolom seketika saat event Reverb diterima tanpa refresh halaman.
-- **Test**: Feature test memeriksa data antrean pesanan pada rute `/cashier/orders`.
+- **Test**: Feature test memeriksa data antrean pesanan pada rute `/kasir/pesanan`.
 - **Referensi**: PRD.md [FR-07], Mockup Layar 3.
 - **Branch**: `feat/T-034-cashier-kanban-board`
-- **Commit / PR**: `feat(T-034): build real-time cashier kanban order queue matching mockup 3`
+- **Commit / PR**: `feat(T-034): connect real-time cashier kanban order queue matching mockup 3`
 
 #### [T-035] Layar Kitchen Display System (KDS) Dapur
-- **Deskripsi**: Membangun layar monitor dapur sesuai Mockup Layar 8 dengan kartu pesanan besar, info porsi/catatan, slot "Kosong", dan toggle progres masakan (*Sedang Dimasak → Selesai*).
-- **Area / File**: `app/Http/Controllers/Kitchen/KitchenDisplayController.php`, `resources/js/Pages/Kitchen/Display.jsx`, `resources/js/Components/Kitchen/KDSTicketCard.jsx`.
+- **Deskripsi**: Menghubungkan layar monitor dapur `resources/js/Pages/Kitchen/Dashboard.jsx` (Mockup Layar 8) ke backend dengan kartu pesanan besar, info porsi/catatan, slot "Kosong", dan toggle progres masakan (*Sedang Dimasak → Selesai*).
+- **Area / File**: `app/Http/Controllers/Kitchen/KitchenDisplayController.php`, `resources/js/Pages/Kitchen/Dashboard.jsx`.
 - **Dependensi**: `T-033`.
-- **Acceptance Criteria**: HANYA pesanan berstatus `paid` yang muncul di KDS; menekan tombol selesai memperbarui status pesanan seketika.
+- **Acceptance Criteria**: HANYA pesanan berstatus `paid` yang muncul di KDS `/dapur`; menekan tombol selesai memperbarui status pesanan seketika.
 - **Test**: `tests/Feature/PayFirstOrderTest.php`.
 - **Referensi**: AGENTS.md Invarian 1, PRD.md [FR-12], Mockup Layar 8.
 - **Branch**: `feat/T-035-kitchen-display-system`
-- **Commit / PR**: `feat(T-035): build real-time kitchen display system (KDS) matching mockup 8`
+- **Commit / PR**: `feat(T-035): connect real-time kitchen display system (KDS) matching mockup 8`
 
 #### [T-036] Listener Echo di Pelacak Pelanggan & Mekanisme Fallback Polling 5 Detik
-- **Deskripsi**: Menghubungkan halaman pelacak pelanggan (`OrderStatus.jsx`) ke saluran privat pesanan dan menyematkan logika fallback polling jika soket terputus.
-- **Area / File**: `resources/js/Pages/Customer/OrderStatus.jsx`.
+- **Deskripsi**: Menghubungkan halaman pelacak pelanggan (`Customer/Order/Status.jsx`) ke saluran privat pesanan dan menyematkan logika fallback polling jika soket terputus.
+- **Area / File**: `resources/js/Pages/Customer/Order/Status.jsx`.
 - **Dependensi**: `T-026`, `T-033`.
 - **Acceptance Criteria**: Badge status pelanggan otomatis berubah saat koki selesai memasak; jika Reverb disconnect, polling aktif otomatis.
 - **Test**: Browser test simulasi perubahan status secara real-time.
@@ -552,14 +519,14 @@ flowchart TD
 - **Commit / PR**: `feat(T-043): implement financial report service aggregating only paid transactions`
 
 #### [T-044] Dasbor Ringkasan Bisnis Admin & Grafik Recharts 14 Hari
-- **Deskripsi**: Membangun halaman dashboard admin sesuai Mockup Layar 5 dengan 4 kartu metrik utama, grafik batang komparatif omzet vs laba, widget QRIS vs Tunai, dan menu terlaris.
-- **Area / File**: `app/Http/Controllers/Admin/DashboardAnalyticsController.php`, `resources/js/Pages/Admin/Dashboard.jsx`, `resources/js/Components/Admin/RevenueLineChart.jsx`.
+- **Deskripsi**: Menghubungkan halaman dashboard admin `resources/js/Pages/Admin/Dashboard.jsx` (Mockup Layar 5) ke backend dengan 4 kartu metrik utama, grafik batang komparatif omzet vs laba, widget QRIS vs Tunai, dan menu terlaris.
+- **Area / File**: `app/Http/Controllers/Admin/DashboardAnalyticsController.php`, `resources/js/Pages/Admin/Dashboard.jsx`, `resources/js/Components/UI/StatCard.jsx`, `resources/js/Components/UI/TrendChart.jsx`.
 - **Dependensi**: `T-043`.
 - **Acceptance Criteria**: Tampilan 100% konsisten dengan Mockup Layar 5; grafik merender data historis 14 hari dengan tooltip Rupiah.
-- **Test**: Feature test memeriksa rute `/admin/dashboard`.
+- **Test**: Feature test memeriksa rute `/admin`.
 - **Referensi**: PRD.md [FR-13], Mockup Layar 5, DESIGN.md Bab 6.
 - **Branch**: `feat/T-044-admin-dashboard-analytics`
-- **Commit / PR**: `feat(T-044): build executive business analytics dashboard matching mockup 5`
+- **Commit / PR**: `feat(T-044): connect executive business analytics dashboard matching mockup 5`
 
 #### [T-045] Halaman Audit Laporan Transaksi & Ekspor Spreadsheet Excel/CSV
 - **Deskripsi**: Membangun halaman audit laporan sesuai Mockup Layar 7 dengan kartu ringkasan, tabel data snapshot historis, serta tombol unduh file spreadsheet (.xlsx/.csv).

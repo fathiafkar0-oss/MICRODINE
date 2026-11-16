@@ -8,9 +8,9 @@ Sources of truth:
 - `docs/mockups/`: 9 UI screens (Customer mobile-first, Central Login, Cashier Kanban, Table Grid, Kitchen Display, Admin Analytics, Menu Master, Historical Audit, Target Projection).
 
 ## 2. Tech Stack & Target Versions
-- **Backend**: Laravel 11.x (PHP 8.2+) — Monolithic Architecture (Single Codebase)
-- **Frontend**: React 18+ via Inertia.js v2 (Single Page Application, NO standalone REST API)
-- **Styling**: Tailwind CSS v3/v4
+- **Backend**: Laravel 13.x (PHP 8.3+) — Monolithic Architecture (Single Codebase)
+- **Frontend**: React 19+ via Inertia.js v3 (`@inertiajs/react ^3.11.0`, SPA, NO standalone REST API)
+- **Styling**: Tailwind CSS v4 (`@tailwindcss/vite`) with semantic `@theme` tokens
 - **Database**: PostgreSQL 16+ (Row-Level / Pessimistic Locking)
 - **Real-Time Synchronization**: Laravel Reverb + Laravel Echo
 - **Payment Gateway**: QRIS digital payment via `PaymentGatewayInterface` (Default Sandbox: Midtrans)
@@ -24,21 +24,22 @@ app/
 ├── Http/Requests/            # FormRequest validation classes
 ├── Models/                   # Eloquent models with strict typing & casts
 resources/js/
-├── Pages/                    # Inertia view pages separated by role
-│   ├── Customer/             # Menu, Cart, Payment, OrderStatus
-│   ├── Cashier/              # KanbanQueue, TableManagement, OrderHistory
-│   ├── Kitchen/              # KitchenDisplay (KDS)
-│   └── Admin/                # Dashboard, MenuManagement, Reports, Settings
-├── Components/               # Reusable atomic & UI components (PascalCase.jsx)
-└── Layouts/                  # Shared layouts (CustomerLayout.jsx, StaffLayout.jsx)
+├── Pages/                    # Inertia view pages (Customer/, Cashier/, Kitchen/, Admin/, Auth/, Landing/)
+├── Components/
+│   ├── UI/                   # Base UI components (Button, Input, Card, Modal, Table, Toggle, StatCard)
+│   └── Shared/               # Domain composite widgets (Navbar, Sidebar, CashPaymentModal, SearchBar)
+├── Layouts/                  # Role-specific layouts (CustomerLayout, CashierLayout, KitchenLayout, AdminLayout)
+├── Hooks/                    # Reusable React hooks (useCart, useCountdown, useCurrency)
+├── Utils/                    # Domain utilities (formatters, sound, storage)
+└── Data/mock/                # Prototype mock datasets (menus, orders, reports, restaurant, staff, tables)
 ```
 - **Conventions**: Classes & Components in PascalCase; methods, variables, and routes in camelCase/kebab-case; DB tables and columns in snake_case.
 
 ## 4. Development & Build Commands
-*(Project currently in setup phase; commands apply once composer/npm packages are installed)*
-- **Serve Backend**: `php artisan serve` (TODO: setup Laravel)
-- **Serve WebSockets**: `php artisan reverb:start` (TODO: setup Reverb)
-- **Frontend Dev**: `npm run dev` (TODO: setup Vite/React)
+- **Serve Backend**: `php artisan serve`
+- **Serve WebSockets**: `php artisan reverb:start`
+- **Frontend Dev**: `npm run dev` (Vite)
+- **Concurrent Dev**: `composer run dev` (orchestrates server, queue, reverb, and vite concurrently)
 - **Testing**: `php artisan test` (Pest / PHPUnit)
 - **Code Style / Lint**: `./vendor/bin/pint` (PHP) & `npm run lint` (JS/React)
 - **Production Build**: `npm run build`
@@ -54,19 +55,19 @@ resources/js/
 8. **Idempotent Webhook & Signature Verification**: Payment gateway webhooks MUST verify cryptographic signatures and enforce idempotency to prevent duplicate transaction recording.
 
 ## 6. Roles & Role-Based Access Control (RBAC)
-- **Customer (`pelanggan`)**: No login required; authenticated via unique table QR token.
-  - Allowed routes: `/table/{table_token}`, `/order/cart`, `/order/checkout`, `/order/{order_code}/status`
-- **Cashier (`kasir`)**: Authenticated staff.
-  - Allowed routes: `/cashier/orders` (Kanban Board), `/cashier/tables` (Table Grid), `/cashier/history` (Daily History & Receipt Re-print)
+- **Customer (`pelanggan`)**: No login required; authenticated via unique table QR parameter/token.
+  - Allowed routes: `/meja/{table}`, `/meja/{table}/keranjang`, `/meja/{table}/checkout`, `/pesanan/{code}`, `/pesanan/{code}/bayar`
+- **Cashier (`kasir`)**: Authenticated staff via `/staf/masuk`.
+  - Allowed routes: `/kasir`, `/kasir/pesanan` (Kanban), `/kasir/meja` (Table Grid), `/kasir/histori` (Daily History & Receipt Re-print)
 - **Kitchen (`dapur`)**: Authenticated kitchen staff.
-  - Allowed routes: `/kitchen/display` (Real-time Kitchen Display System)
-- **Admin (`admin`)**: Authenticated executive.
-  - Allowed routes: `/admin/dashboard` (Executive Financial Dashboard), `/admin/menus` (Menu CRUD & Margin Calculator), `/admin/reports` (Historical Transaction Audit & Export), `/admin/settings` (Tax & System Configuration)
+  - Allowed routes: `/dapur` (Real-time Kitchen Display System)
+- **Admin (`admin`)**: Authenticated executive via `/staf/masuk`.
+  - Allowed routes: `/admin`, `/admin/menu` (Menu CRUD & Margin), `/admin/laporan` (Reports & Audit), `/admin/target` (Sales Target), `/admin/pengaturan` (Settings & Tax)
 
 ## 7. Coding Standards
 - **Validation**: All user inputs validated via dedicated `FormRequest` classes.
 - **Business Logic**: Encapsulated in `Services/` or `Actions/`, never in controllers.
-- **Currency & Money**: Always stored and calculated as integer Rupiah (`int`), never floating-point.
+- **Currency & Money**: Always stored and calculated as integer Rupiah (`int` / `bigint`), never floating-point.
 - **Timezone**: Strictly `Asia/Jakarta` (WIB) across backend and database.
 - **Language Policy**: UI text, labels, and customer-facing messages in Indonesian (Bahasa Indonesia); source code, variable names, database schemas, and developer comments in English.
 

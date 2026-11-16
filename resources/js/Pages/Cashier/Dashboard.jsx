@@ -1,5 +1,6 @@
+import { router } from '@inertiajs/react';
 import { ChefHat, CircleCheck, RefreshCw, Timer, Wallet } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 
 import CashPaymentModal from '@/Components/Shared/CashPaymentModal';
@@ -33,7 +34,14 @@ export default function CashierDashboard({ orders: initialOrders = mockOrders, r
     const [orders, setOrders] = useState(initialOrders);
     const [query, setQuery] = useState('');
     const [cashOrder, setCashOrder] = useState(null);
+    const [busyCode, setBusyCode] = useState(null);
     const { format, taxRate } = useCurrency(restaurant);
+
+    // Props `orders` berganti setiap Inertia memuat ulang halaman ini (mis. setelah
+    // redirect `back()` dari aksi di bawah, atau siaran WebSocket memicu router.reload()).
+    useEffect(() => {
+        setOrders(initialOrders);
+    }, [initialOrders]);
 
     const filtered = useMemo(() => {
         const keyword = query.trim().toLowerCase();
@@ -42,28 +50,35 @@ export default function CashierDashboard({ orders: initialOrders = mockOrders, r
 
     const byStatus = (status) => filtered.filter((order) => order.status === status);
     const countOf = (status) => orders.filter((order) => order.status === status).length;
-    const setStatus = (code, status) => setOrders((prev) => prev.map((order) => (order.code === code ? { ...order, status } : order)));
 
-    const confirmCash = (order, amount, change) => {
-        setStatus(order.code, 'diproses');
-        setCashOrder(null);
-        toast.success(`${order.code} lunas · kembalian ${format(change)}`);
+    const confirmCash = (order, amount) => {
+        setBusyCode(order.code);
+        router.post(
+            `/kasir/pesanan/${order.id}/pay-cash`,
+            { cash_received: amount },
+            {
+                preserveScroll: true,
+                onSuccess: () => setCashOrder(null),
+                onFinish: () => setBusyCode(null),
+            },
+        );
     };
 
     const markDone = (order) => {
-        setStatus(order.code, 'selesai');
-        toast.success(`${order.code} selesai dimasak`);
+        setBusyCode(order.code);
+        router.patch(`/dapur/pesanan/${order.id}/status`, { status: 'done' }, { preserveScroll: true, onFinish: () => setBusyCode(null) });
     };
 
     const deliver = (order) => {
-        setOrders((prev) => prev.filter((item) => item.code !== order.code));
-        toast.success(`${order.code} diantar ke Meja ${order.table}`);
+        setBusyCode(order.code);
+        router.post(`/kasir/pesanan/${order.id}/serve`, {}, { preserveScroll: true, onFinish: () => setBusyCode(null) });
     };
 
     const actionFor = (order) => {
+        const busy = busyCode === order.code;
         if (order.status === 'menunggu_bayar') {
             return order.method === 'tunai' ? (
-                <Button variant="navy" block onClick={() => setCashOrder(order)}>
+                <Button variant="navy" block disabled={busy} onClick={() => setCashOrder(order)}>
                     Terima Tunai
                 </Button>
             ) : (
@@ -72,14 +87,14 @@ export default function CashierDashboard({ orders: initialOrders = mockOrders, r
         }
         if (order.status === 'diproses') {
             return (
-                <Button variant="navy" block onClick={() => markDone(order)}>
-                    Tandai Selesai
+                <Button variant="navy" block disabled={busy} onClick={() => markDone(order)}>
+                    {busy ? 'Memproses…' : 'Tandai Selesai'}
                 </Button>
             );
         }
         return (
-            <Button variant="navy" block onClick={() => deliver(order)}>
-                Antar ke Meja {order.table}
+            <Button variant="navy" block disabled={busy} onClick={() => deliver(order)}>
+                {busy ? 'Memproses…' : `Antar ke Meja ${order.table}`}
             </Button>
         );
     };
@@ -96,7 +111,7 @@ export default function CashierDashboard({ orders: initialOrders = mockOrders, r
                         <button
                             type="button"
                             aria-label="Muat ulang antrean"
-                            onClick={() => toast('Antrean sudah terbaru')}
+                            onClick={() => router.reload({ onSuccess: () => toast('Antrean sudah terbaru') })}
                             className="grid h-10 w-10 place-items-center rounded-xl border border-line bg-panel text-soft hover:bg-raised"
                         >
                             <RefreshCw className="h-4 w-4" />

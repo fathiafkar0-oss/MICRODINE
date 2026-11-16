@@ -44,6 +44,10 @@ class HandleInertiaRequests extends Middleware
             ],
             'flash' => [
                 'status' => $request->session()->get('status'),
+                // Lihat `Cashier\TableManagementController::closeSession()` — dipakai
+                // frontend untuk menampilkan tombol "tutup paksa" saat masih ada
+                // pesanan belum disajikan di meja tersebut.
+                'unservedCount' => $request->session()->get('unservedCount'),
             ],
         ];
     }

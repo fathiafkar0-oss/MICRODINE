@@ -41,6 +41,7 @@ export default function CashierOrders({ menus = mockMenus, categories = mockCate
     const [method, setMethod] = useState('tunai');
     const [category, setCategory] = useState('Semua');
     const [query, setQuery] = useState('');
+    const [submitting, setSubmitting] = useState(false);
     const scanInput = useRef(null);
     const totals = bill(cart.items);
 
@@ -71,9 +72,26 @@ export default function CashierOrders({ menus = mockMenus, categories = mockCate
             toast.error('Pilih minimal satu menu');
             return;
         }
-        toast.success(`Pesanan Meja ${table} dibuat · ${method === 'tunai' ? 'menunggu pembayaran tunai' : 'QRIS ditampilkan'}`);
-        cart.clear();
-        router.visit('/kasir');
+        setSubmitting(true);
+        router.post(
+            '/kasir/pesanan/manual',
+            {
+                table_number: table,
+                customer_name: customer.trim(),
+                payment_method: method,
+                items: cart.items.map((item) => ({ menu_id: item.menuId, quantity: item.qty, notes: item.note || null })),
+            },
+            {
+                onSuccess: () => {
+                    cart.clear();
+                    setTable(null);
+                    setCustomer('');
+                    router.visit('/kasir');
+                },
+                onError: () => setSubmitting(false),
+                onFinish: () => setSubmitting(false),
+            },
+        );
     };
 
     return (
@@ -185,8 +203,8 @@ export default function CashierOrders({ menus = mockMenus, categories = mockCate
                         className="mt-2"
                     />
 
-                    <Button variant="navy" size="lg" block className="mt-5" onClick={submitOrder}>
-                        Buat Pesanan
+                    <Button variant="navy" size="lg" block className="mt-5" onClick={submitOrder} disabled={submitting}>
+                        {submitting ? 'Memproses…' : 'Buat Pesanan'}
                     </Button>
                 </Card>
             </div>

@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreTableRequest;
 use App\Http\Requests\Admin\UpdateTableRequest;
 use App\Models\DiningTable;
+use App\Models\RestaurantSetting;
 use App\Support\CodeGenerator;
+use App\Support\RestaurantPresenter;
 use App\Support\TablePresenter;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -25,6 +27,7 @@ class TableManagementController extends Controller
         return Inertia::render('Admin/Tables', [
             'tables' => TablePresenter::collection($tables),
             'areas' => DiningTable::query()->select('area')->distinct()->orderBy('area')->pluck('area'),
+            'restaurant' => RestaurantPresenter::toArray(RestaurantSetting::current()),
             'appUrl' => config('app.url'),
         ]);
     }

@@ -7,7 +7,7 @@ import { formatCurrency } from '@/Utils/formatCurrency';
 import { roundTo } from '@/Utils/salesTarget';
 
 /** Form atur target omzet bulanan; menampilkan target harian setaranya. */
-export default function TargetFormModal({ target, onClose, onSave }) {
+export default function TargetFormModal({ target, onClose, onSave, saving = false }) {
     const [amount, setAmount] = useState(target.monthlyTarget);
 
     return (
@@ -23,11 +23,11 @@ export default function TargetFormModal({ target, onClose, onSave }) {
                     Setara target harian <strong>{formatCurrency(roundTo(amount / target.daysInMonth, 1000))}</strong>.
                 </p>
                 <div className="mt-5 grid grid-cols-2 gap-3">
-                    <Button variant="outline" onClick={onClose}>
+                    <Button variant="outline" onClick={onClose} disabled={saving}>
                         Batal
                     </Button>
-                    <Button type="submit" variant="navy" disabled={!amount}>
-                        Simpan Target
+                    <Button type="submit" variant="navy" disabled={!amount || saving}>
+                        {saving ? 'Menyimpan…' : 'Simpan Target'}
                     </Button>
                 </div>
             </form>

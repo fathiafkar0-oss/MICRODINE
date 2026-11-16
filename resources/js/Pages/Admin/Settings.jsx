@@ -1,3 +1,4 @@
+import { router } from '@inertiajs/react';
 import { Percent, Plus, QrCode, Store, Timer, UserCog } from 'lucide-react';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
@@ -21,11 +22,27 @@ const ROLE_TONE = { admin: 'gold', dapur: 'warn', kasir: 'info' };
  */
 export default function AdminSettings({ restaurant = mockRestaurant, staff = Object.values(mockStaff), payment = { provider: 'Midtrans', mode: 'sandbox' } }) {
     const [form, setForm] = useState({ ...restaurant, taxPercent: Math.round(restaurant.taxRate * 100) });
+    const [saving, setSaving] = useState(false);
     const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
 
     const save = (event) => {
         event.preventDefault();
-        toast.success('Pengaturan disimpan');
+        setSaving(true);
+        // `taxLabel` & `sessionTimeoutMinutes` tidak punya kolom di skema 11-tabel
+        // final (lihat RestaurantPresenter), jadi tidak dikirim ke backend — tetap
+        // tersimpan secara lokal di form ini saja.
+        router.put(
+            '/admin/pengaturan',
+            {
+                restaurant_name: form.name,
+                address: form.address ?? null,
+                phone: form.phone ?? null,
+                tax_enabled: form.taxEnabled,
+                tax_rate_percent: Number(form.taxPercent),
+                payment_deadline_minutes: Number(form.paymentDeadlineMinutes),
+            },
+            { onFinish: () => setSaving(false) },
+        );
     };
 
     return (
@@ -35,8 +52,8 @@ export default function AdminSettings({ restaurant = mockRestaurant, staff = Obj
                     title="Pengaturan Restoran"
                     subtitle="Berlaku untuk semua kasir, dapur, dan halaman pelanggan"
                     actions={
-                        <Button type="submit" variant="navy">
-                            Simpan Perubahan
+                        <Button type="submit" variant="navy" disabled={saving}>
+                            {saving ? 'Menyimpan…' : 'Simpan Perubahan'}
                         </Button>
                     }
                 />

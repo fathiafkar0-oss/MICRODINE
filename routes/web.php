@@ -1,7 +1,12 @@
 <?php
 
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\MenuAnalyticsController;
 use App\Http\Controllers\Admin\MenuManagementController;
+use App\Http\Controllers\Admin\ReportsController;
+use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\TableManagementController as AdminTableManagementController;
+use App\Http\Controllers\Admin\TargetsController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Cashier\DashboardController as CashierDashboardController;
 use App\Http\Controllers\Cashier\HistoryController;
@@ -13,7 +18,6 @@ use App\Http\Controllers\Customer\MenuController as CustomerMenuController;
 use App\Http\Controllers\Customer\OrderStatusController;
 use App\Http\Controllers\Kitchen\DashboardController as KitchenDashboardController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,10 +27,8 @@ use Inertia\Inertia;
 | Zona publik (pelanggan) memakai throttle untuk mencegah penyalahgunaan.
 | Zona staf dilindungi `auth` + `role:<peran>` (lihat ARCHITECTURE.md Bab 7).
 |
-| Modul C-G (menu admin, meja & sesi, pemesanan pelanggan, pay-first,
-| real-time) memakai controller sungguhan. Halaman Modul J (laporan, target,
-| pengaturan, analisis menu — di luar cakupan iterasi ini) masih memakai
-| Route::inertia dengan data contoh, menunggu giliran modul berikutnya.
+| Modul C-J (menu admin, meja & sesi, pemesanan pelanggan, pay-first,
+| real-time, histori, laporan & admin+) memakai controller sungguhan.
 |
 */
 
@@ -82,7 +84,7 @@ Route::middleware(['auth', 'role:dapur,kasir,admin'])->prefix('dapur')->name('ki
 
 // ---------------------------------------------------------------------- Admin
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::inertia('/', 'Admin/Dashboard')->name('dashboard');
+    Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
 
     // Modul C — Master Menu Admin.
     Route::get('/menu', [MenuManagementController::class, 'index'])->name('menus');
@@ -91,7 +93,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::delete('/menu/{menuItem}', [MenuManagementController::class, 'destroy'])->name('menus.destroy');
     Route::patch('/menu/{menuItem}/toggle-availability', [MenuManagementController::class, 'toggleAvailability'])->name('menus.toggle');
 
-    Route::inertia('/analisis-menu', 'Admin/MenuAnalytics')->name('menu-analytics');
+    Route::get('/analisis-menu', [MenuAnalyticsController::class, 'index'])->name('menu-analytics');
 
     // Modul D — Meja & QR (sisi admin).
     Route::get('/meja', [AdminTableManagementController::class, 'index'])->name('tables');
@@ -100,7 +102,10 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::patch('/meja/{table}/status', [AdminTableManagementController::class, 'toggleStatus'])->name('tables.toggle');
     Route::post('/meja/{table}/qr-ulang', [AdminTableManagementController::class, 'regenerateQr'])->name('tables.regenerate-qr');
 
-    Route::inertia('/laporan', 'Admin/Reports')->name('reports');
-    Route::inertia('/target', 'Admin/Targets')->name('targets');
-    Route::inertia('/pengaturan', 'Admin/Settings')->name('settings');
+    // Modul J — Laporan & admin+.
+    Route::get('/laporan', [ReportsController::class, 'index'])->name('reports');
+    Route::get('/target', [TargetsController::class, 'index'])->name('targets');
+    Route::put('/target', [TargetsController::class, 'update'])->name('targets.update');
+    Route::get('/pengaturan', [SettingsController::class, 'index'])->name('settings');
+    Route::put('/pengaturan', [SettingsController::class, 'update'])->name('settings.update');
 });

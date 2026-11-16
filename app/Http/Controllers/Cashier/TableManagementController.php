@@ -9,7 +9,6 @@ use App\Models\TableSession;
 use App\Services\TableSessionService;
 use App\Services\UnservedOrdersException;
 use App\Support\TablePresenter;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -32,18 +31,15 @@ class TableManagementController extends Controller
         ]);
     }
 
-    public function closeSession(CloseSessionRequest $request, TableSession $session): RedirectResponse|JsonResponse
+    public function closeSession(CloseSessionRequest $request, TableSession $session): RedirectResponse
     {
         try {
             $this->sessions->close($session, (bool) $request->validated('force', false), $request->user()->id);
         } catch (UnservedOrdersException $e) {
-            return response()->json([
-                'error' => [
-                    'code' => 'UNSERVED_ORDERS_EXIST',
-                    'message' => $e->getMessage(),
-                    'unserved_count' => $e->unservedCount,
-                ],
-            ], 409);
+            // `withErrors` (bukan JsonResponse 409) agar tetap jadi redirect yang
+            // dipahami Inertia's router.post (lihat `useFlashToast` onError untuk
+            // toast pesan ini, dan `unservedCount` flash untuk tombol "tutup paksa").
+            return back()->withErrors(['session' => $e->getMessage()])->with('unservedCount', $e->unservedCount);
         }
 
         return back()->with('status', 'Sesi meja ditutup. Meja kembali tersedia.');

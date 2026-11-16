@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Customer;
 
+use App\Support\MenuPresenter;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
@@ -12,6 +13,22 @@ class CheckoutRequest extends FormRequest
     public function authorize(): bool
     {
         return true;
+    }
+
+    /**
+     * `useCart` menyimpan `menuId` dalam format tampilan ("M-010", lihat
+     * `MenuPresenter::displayId()`), bukan ID baris database mentah.
+     * Normalisasi di sini sebelum rule `exists:menu_items,id` berjalan.
+     */
+    protected function prepareForValidation(): void
+    {
+        $items = $this->input('items', []);
+        foreach ($items as $index => $item) {
+            if (isset($item['menu_id']) && is_string($item['menu_id'])) {
+                $items[$index]['menu_id'] = MenuPresenter::realId($item['menu_id']) ?? $item['menu_id'];
+            }
+        }
+        $this->merge(['items' => $items]);
     }
 
     /**

@@ -1,7 +1,15 @@
 import { createInertiaApp } from '@inertiajs/react';
 import { Toaster } from 'react-hot-toast';
 
+import useFlashToast from '@/Hooks/useFlashToast';
+
 const appName = import.meta.env.VITE_APP_NAME || 'MICRODINE';
+
+/** Lihat Hooks/useFlashToast.js — titik integrasi tunggal untuk flash/error toast. */
+function FlashToastListener() {
+    useFlashToast();
+    return null;
+}
 
 // Semua halaman ada di resources/js/Pages. Nama komponen Inertia mengikuti path-nya,
 // mis. Inertia::render('Cashier/Orders') -> Pages/Cashier/Orders.jsx
@@ -20,6 +28,7 @@ createInertiaApp({
         return (
             <>
                 {app}
+                <FlashToastListener />
                 <Toaster
                     position="top-center"
                     containerClassName="print:hidden"

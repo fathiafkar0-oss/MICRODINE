@@ -12,7 +12,6 @@ import useCountdown from '@/Hooks/useCountdown';
 import useCurrency from '@/Hooks/useCurrency';
 import CustomerLayout from '@/Layouts/CustomerLayout';
 import { cx } from '@/Utils/classNames';
-import { formatTime } from '@/Utils/formatDate';
 import { resolveOrder, saveOrder } from '@/Utils/orderStorage';
 
 /**
@@ -24,6 +23,7 @@ import { resolveOrder, saveOrder } from '@/Utils/orderStorage';
 export default function PaymentIndex({ code = 'A-029', order: orderProp, restaurant = mockRestaurant }) {
     const initial = useMemo(() => ({ ...resolveOrder(code, orderProp), status: 'menunggu_bayar' }), [code, orderProp]);
     const [order, setOrder] = useState(initial);
+    const [simulating, setSimulating] = useState(false);
     const { format, bill } = useCurrency(restaurant);
     const { total } = bill(order.items);
     const countdown = useCountdown((order.createdAt ?? Date.now()) + restaurant.paymentDeadlineMinutes * 60 * 1000);
@@ -35,11 +35,25 @@ export default function PaymentIndex({ code = 'A-029', order: orderProp, restaur
         saveOrder(next);
     };
 
-    // Mode demo: menggantikan notifikasi webhook dari payment gateway sandbox.
-    const simulatePaid = () => {
-        saveOrder({ ...order, status: 'diproses', paidAt: formatTime() });
-        toast.success('Pembayaran diterima. Pesanan masuk ke dapur.');
-        router.visit(`/pesanan/${order.code}`);
+    // Mode demo: memanggil endpoint simulasi webhook sungguhan (API_CONTRACT.md 5.2),
+    // bukan sekadar mengubah state lokal. Hanya aktif di APP_ENV=local (dicek di
+    // backend); grup rute 'api' stateless sehingga fetch mentah tanpa token CSRF.
+    const simulatePaid = async () => {
+        setSimulating(true);
+        try {
+            const response = await fetch(`/api/v1/payments/simulate/${order.code}`, {
+                method: 'POST',
+                headers: { Accept: 'application/json' },
+            });
+            if (!response.ok) {
+                throw new Error('Simulasi gagal');
+            }
+            toast.success('Pembayaran diterima. Pesanan masuk ke dapur.');
+            router.visit(`/pesanan/${order.code}`);
+        } catch {
+            toast.error('Gagal menyimulasikan pembayaran. Coba lagi.');
+            setSimulating(false);
+        }
     };
 
     const downloadQr = () => {
@@ -126,8 +140,13 @@ export default function PaymentIndex({ code = 'A-029', order: orderProp, restaur
                 </Card>
 
                 {!countdown.expired && (
-                    <button type="button" onClick={simulatePaid} className="mx-auto block text-xs font-semibold text-faint underline underline-offset-2 hover:text-ink">
-                        Mode demo: simulasikan pembayaran berhasil
+                    <button
+                        type="button"
+                        onClick={simulatePaid}
+                        disabled={simulating}
+                        className="mx-auto block text-xs font-semibold text-faint underline underline-offset-2 hover:text-ink disabled:opacity-50"
+                    >
+                        {simulating ? 'Memproses…' : 'Mode demo: simulasikan pembayaran berhasil'}
                     </button>
                 )}
             </div>

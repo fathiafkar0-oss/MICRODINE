@@ -19,9 +19,7 @@ use App\Models\RestaurantSetting;
 use App\Support\MenuPresenter;
 use App\Support\RestaurantPresenter;
 use App\Support\TablePresenter;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -76,22 +74,13 @@ class OrderController extends Controller
         return back()->with('status', "Pesanan {$result['order']->daily_queue_number} dibuat. Kembalian: Rp".number_format($result['change_due'], 0, ',', '.'));
     }
 
-    public function payCash(CashPaymentRequest $request, Order $order): JsonResponse
+    public function payCash(CashPaymentRequest $request, Order $order): RedirectResponse
     {
-        try {
-            $result = $this->cashPayment->execute($order, (int) $request->validated('cash_received'), $request->user()->id);
-        } catch (ValidationException $e) {
-            throw $e;
-        }
+        $result = $this->cashPayment->execute($order, (int) $request->validated('cash_received'), $request->user()->id);
 
-        return response()->json([
-            'success' => true,
-            'order_code' => $result['order']->daily_queue_number,
-            'total_bill' => $result['order']->total,
-            'cash_received' => (int) $request->validated('cash_received'),
-            'change_due' => $result['change_due'],
-            'paid_at' => $result['order']->paid_at?->toIso8601String(),
-        ]);
+        $change = number_format($result['change_due'], 0, ',', '.');
+
+        return back()->with('status', "Pesanan {$result['order']->daily_queue_number} lunas. Kembalian: Rp{$change}.");
     }
 
     public function markServed(Order $order): RedirectResponse

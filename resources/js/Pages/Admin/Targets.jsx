@@ -1,6 +1,6 @@
+import { router } from '@inertiajs/react';
 import { CalendarDays, Info, Pencil } from 'lucide-react';
-import { useState } from 'react';
-import toast from 'react-hot-toast';
+import { useEffect, useState } from 'react';
 
 import PageHeader from '@/Components/Shared/PageHeader';
 import Badge from '@/Components/UI/Badge';
@@ -31,15 +31,29 @@ const WEEK_STATE = {
 export default function AdminTargets({ salesTarget = mockSalesTarget }) {
     const [target, setTarget] = useState(salesTarget);
     const [editing, setEditing] = useState(false);
+    const [saving, setSaving] = useState(false);
+
+    // `salesTarget` berganti setiap halaman ini dimuat ulang Inertia (mis.
+    // setelah `saveTarget` sukses, backend menghitung ulang target mingguan).
+    useEffect(() => {
+        setTarget(salesTarget);
+    }, [salesTarget]);
+
     const stats = analyseTarget(target);
     const progress = stats.realised / target.monthlyTarget;
     const onTrack = stats.projection >= target.monthlyTarget;
     const recentDays = target.daily.map((value, index) => ({ value, day: index + 1 })).slice(-6).reverse();
 
     const saveTarget = (monthlyTarget) => {
-        setTarget((prev) => ({ ...prev, monthlyTarget, dailyTarget: roundTo(monthlyTarget / prev.daysInMonth, 1000) }));
-        setEditing(false);
-        toast.success(`Target ${target.month} disimpan`);
+        setSaving(true);
+        router.put(
+            '/admin/target',
+            { month: target.monthYear, monthly_target: monthlyTarget },
+            {
+                onSuccess: () => setEditing(false),
+                onFinish: () => setSaving(false),
+            },
+        );
     };
 
     return (
@@ -169,7 +183,7 @@ export default function AdminTargets({ salesTarget = mockSalesTarget }) {
                 </Card>
             </div>
 
-            {editing && <TargetFormModal target={target} onClose={() => setEditing(false)} onSave={saveTarget} />}
+            {editing && <TargetFormModal target={target} onClose={() => (saving ? null : setEditing(false))} onSave={saveTarget} saving={saving} />}
         </AdminLayout>
     );
 }

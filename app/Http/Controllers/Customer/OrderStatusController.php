@@ -38,7 +38,10 @@ class OrderStatusController extends Controller
                 ...OrderPresenter::toArray($order),
                 'qrisString' => $qris['qr_string'] ?? null,
                 'qrisExpiresAt' => $qris['expires_at']?->toIso8601String() ?? now()->addMinutes($restaurant->qris_expires_minutes)->toIso8601String(),
-                'createdAt' => $order->created_at->toIso8601String(),
+                // Hooks/useCountdown.js melakukan aritmetika numerik langsung pada
+                // nilai ini (`order.createdAt + menit*60000`), jadi HARUS berupa
+                // timestamp milidetik (number), bukan string ISO-8601.
+                'createdAt' => $order->created_at->getTimestampMs(),
             ],
             'restaurant' => RestaurantPresenter::toArray($restaurant),
         ]);

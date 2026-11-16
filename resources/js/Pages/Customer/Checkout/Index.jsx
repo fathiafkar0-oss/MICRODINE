@@ -11,7 +11,7 @@ import useCart from '@/Hooks/useCart';
 import useCurrency from '@/Hooks/useCurrency';
 import CustomerLayout from '@/Layouts/CustomerLayout';
 import { cx } from '@/Utils/classNames';
-import { nextOrderCode, readTableSession, saveOrder, sessionOrders } from '@/Utils/orderStorage';
+import { readTableSession, sessionOrders } from '@/Utils/orderStorage';
 import { isPaid } from '@/Utils/status';
 
 const METHODS = [
@@ -37,6 +37,7 @@ export default function CheckoutIndex({ table = '07', restaurant = mockRestauran
     const [name, setName] = useState(remembered.customer || lastOrder?.customer || '');
     const [method, setMethod] = useState(remembered.orders.length ? remembered.method : (lastOrder?.method ?? 'qris'));
     const [error, setError] = useState('');
+    const [submitting, setSubmitting] = useState(false);
     const totals = bill(cart.items);
 
     const submit = (event) => {
@@ -49,11 +50,22 @@ export default function CheckoutIndex({ table = '07', restaurant = mockRestauran
             toast.error('Keranjang masih kosong');
             return;
         }
-        // Fase frontend: nomor antrean dibuat di browser. Backend yang membuat nomor sebenarnya.
-        const order = { code: nextOrderCode(), table, customer: name.trim(), method, status: 'menunggu_bayar', sequence, source: 'qr', items: cart.items, createdAt: Date.now() };
-        saveOrder(order);
-        cart.clear();
-        router.visit(`/pesanan/${order.code}/bayar`);
+        // Backend membuat nomor antrean & kode pesanan sesungguhnya, lalu
+        // mengalihkan ke /pesanan/{code}/bayar (lihat CheckoutController::store).
+        setSubmitting(true);
+        router.post(
+            `/meja/${table}/checkout`,
+            {
+                customer_name: name.trim(),
+                payment_method: method,
+                items: cart.items.map((item) => ({ menu_id: item.menuId, quantity: item.qty, notes: item.note || null })),
+            },
+            {
+                onSuccess: () => cart.clear(),
+                onError: () => setSubmitting(false),
+                onFinish: () => setSubmitting(false),
+            },
+        );
     };
 
     return (
@@ -68,8 +80,8 @@ export default function CheckoutIndex({ table = '07', restaurant = mockRestauran
                             <ShieldCheck className="h-4 w-4 text-success" aria-hidden="true" />
                             Pesanan langsung masuk ke kasir &amp; dapur setelah lunas.
                         </p>
-                        <Button type="submit" size="lg" block>
-                            Konfirmasi Pesanan · {format(totals.total)}
+                        <Button type="submit" size="lg" block disabled={submitting}>
+                            {submitting ? 'Memproses…' : `Konfirmasi Pesanan · ${format(totals.total)}`}
                         </Button>
                     </div>
                 }

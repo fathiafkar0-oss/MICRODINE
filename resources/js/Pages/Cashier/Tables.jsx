@@ -1,5 +1,6 @@
+import { router, usePage } from '@inertiajs/react';
 import { QrCode, RefreshCw, Users } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 
 import PageHeader from '@/Components/Shared/PageHeader';
@@ -23,12 +24,27 @@ export default function CashierTables({ tables: tableProp, appUrl = typeof windo
     const [tables, setTables] = useState(() => tableProp ?? withSessions(mockTables.filter((table) => table.isActive), mockOrders));
     const [qrTable, setQrTable] = useState(null);
     const [closing, setClosing] = useState(null);
+    const [closingBusy, setClosingBusy] = useState(false);
+    const { unservedCount } = usePage().props.flash ?? {};
     const free = tables.filter((table) => table.status === 'tersedia').length;
 
-    const closeSession = (number) => {
-        setTables((prev) => prev.map((table) => (table.number === number ? { ...table, status: 'tersedia', session: null } : table)));
-        setClosing(null);
-        toast.success(`Sesi Meja ${number} ditutup. Meja kembali tersedia.`);
+    // Props `tables` diperbarui setiap halaman ini dimuat ulang Inertia (mis.
+    // setelah `closeSession` sukses, atau siaran WebSocket memicu router.reload()).
+    useEffect(() => {
+        if (tableProp) setTables(tableProp);
+    }, [tableProp]);
+
+    const closeSession = (session, force = false) => {
+        setClosingBusy(true);
+        router.post(
+            `/kasir/meja/${session.id}/close`,
+            { force },
+            {
+                preserveScroll: true,
+                onSuccess: () => setClosing(null),
+                onFinish: () => setClosingBusy(false),
+            },
+        );
     };
 
     return (
@@ -40,7 +56,12 @@ export default function CashierTables({ tables: tableProp, appUrl = typeof windo
                     <>
                         <TableStatusBadge status="tersedia" />
                         <TableStatusBadge status="terisi" />
-                        <button type="button" aria-label="Muat ulang status meja" onClick={() => toast('Status meja sudah terbaru')} className="grid h-10 w-10 place-items-center rounded-xl bg-gold-soft text-obsidian hover:bg-gold">
+                        <button
+                            type="button"
+                            aria-label="Muat ulang status meja"
+                            onClick={() => router.reload({ onSuccess: () => toast('Status meja sudah terbaru') })}
+                            className="grid h-10 w-10 place-items-center rounded-xl bg-gold-soft text-obsidian hover:bg-gold"
+                        >
                             <RefreshCw className="h-4 w-4" />
                         </button>
                     </>
@@ -89,16 +110,21 @@ export default function CashierTables({ tables: tableProp, appUrl = typeof windo
                 {qrTable && <TableQrCard table={qrTable} appUrl={appUrl} />}
             </Modal>
 
-            <Modal open={Boolean(closing)} onClose={() => setClosing(null)} title={`Tutup sesi Meja ${closing?.number ?? ''}?`} subtitle="Lakukan setelah pelanggan meninggalkan meja." width="max-w-sm">
+            <Modal open={Boolean(closing)} onClose={() => (closingBusy ? null : setClosing(null))} title={`Tutup sesi Meja ${closing?.number ?? ''}?`} subtitle="Lakukan setelah pelanggan meninggalkan meja." width="max-w-sm">
                 <p className="text-sm text-soft">
                     Meja akan kembali <strong className="text-success">Tersedia</strong> dan pemindaian QR berikutnya dianggap pelanggan baru. Pesanan yang sudah lunas tetap tercatat di histori.
                 </p>
+                {unservedCount > 0 && (
+                    <p className="mt-3 rounded-xl bg-danger-tint px-3 py-2 text-sm font-semibold text-danger">
+                        Masih ada {unservedCount} pesanan yang belum disajikan. Tutup paksa akan mengabaikan ini.
+                    </p>
+                )}
                 <div className="mt-5 grid grid-cols-2 gap-3">
-                    <Button variant="outline" onClick={() => setClosing(null)}>
+                    <Button variant="outline" onClick={() => setClosing(null)} disabled={closingBusy}>
                         Batal
                     </Button>
-                    <Button variant="navy" onClick={() => closeSession(closing.number)}>
-                        Tutup Sesi
+                    <Button variant="navy" onClick={() => closeSession(closing.session, unservedCount > 0)} disabled={closingBusy}>
+                        {closingBusy ? 'Memproses…' : unservedCount > 0 ? 'Tutup Paksa' : 'Tutup Sesi'}
                     </Button>
                 </div>
             </Modal>

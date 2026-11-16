@@ -1,3 +1,4 @@
+import Reveal from '@/Components/Shared/Reveal';
 import { cx } from '@/Utils/classNames';
 
 import { Kicker, SectionTitle } from '@/Pages/Landing/Partials/shared';
@@ -7,11 +8,11 @@ export default function PhotoBanner({ image, kicker, title, overlay = 'bg-navy/7
     return (
         <section className={cx('relative bg-cover bg-center', fixed && 'lg:bg-fixed', className)} style={{ backgroundImage: `url(${image})` }} aria-label={label}>
             <div className={cx('absolute inset-0', overlay)} aria-hidden="true" />
-            <div className="relative mx-auto max-w-3xl px-4 text-center sm:px-6">
+            <Reveal className="relative mx-auto max-w-3xl px-4 text-center sm:px-6">
                 <Kicker>{kicker}</Kicker>
                 <SectionTitle className="mt-3 leading-tight text-ivory">{title}</SectionTitle>
                 {children}
-            </div>
+            </Reveal>
         </section>
     );
 }

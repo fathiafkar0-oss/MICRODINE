@@ -21,7 +21,7 @@ import { LandingButton, LINKS } from '@/Pages/Landing/Partials/shared';
  */
 export default function LandingIndex() {
     return (
-        <div className="min-h-dvh overflow-x-hidden bg-navy text-ivory/80 [scroll-behavior:smooth]">
+        <div className="min-h-dvh overflow-x-hidden bg-navy text-ivory/80">
             <Head title="Pesan dari Meja, Bayar di Awal" />
             <LandingNavbar />
             <HeroSection />

@@ -1,6 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { Menu, X } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { cx } from '@/Utils/classNames';
 
@@ -17,10 +17,18 @@ export const SECTIONS = [
 /** Navbar transparan di atas foto hero; di ponsel berubah menjadi menu lipat. */
 export default function LandingNavbar() {
     const [open, setOpen] = useState(false);
+    const [scrolled, setScrolled] = useState(false);
+
+    useEffect(() => {
+        const onScroll = () => setScrolled(window.scrollY > 40);
+        onScroll();
+        window.addEventListener('scroll', onScroll, { passive: true });
+        return () => window.removeEventListener('scroll', onScroll);
+    }, []);
 
     return (
-        <header className="absolute inset-x-0 top-0 z-30">
-            <div className="mx-auto flex h-20 max-w-6xl items-center justify-between px-4 sm:px-6">
+        <header className={cx('fixed inset-x-0 top-0 z-30 animate-fade-in transition-colors duration-500', scrolled || open ? 'border-b border-gold/20 bg-navy/90 shadow-lg shadow-obsidian/30 backdrop-blur' : 'bg-transparent')}>
+            <div className={cx('mx-auto flex max-w-6xl items-center justify-between px-4 transition-[height] duration-500 sm:px-6', scrolled ? 'h-16' : 'h-20')}>
                 <a href="#beranda" aria-label="MICRODINE, ke bagian atas">
                     <LandingLogo />
                 </a>
@@ -30,7 +38,10 @@ export default function LandingNavbar() {
                         <a
                             key={section.href}
                             href={section.href}
-                            className={cx('text-[13px] font-medium uppercase tracking-[0.18em] transition-colors hover:text-gold', index === 0 ? 'text-gold' : 'text-ivory/85')}
+                            className={cx('relative text-[13px] font-medium uppercase tracking-[0.18em] transition-colors hover:text-gold',
+                                'after:absolute after:-bottom-1.5 after:left-0 after:h-px after:w-full after:origin-left after:scale-x-0 after:bg-gold after:transition-transform after:duration-300 hover:after:scale-x-100',
+                                index === 0 ? 'text-gold' : 'text-ivory/85',
+                            )}
                         >
                             {section.label}
                         </a>
@@ -57,7 +68,7 @@ export default function LandingNavbar() {
             </div>
 
             {open && (
-                <div className="mx-4 border border-gold/30 bg-obsidian p-4 md:hidden">
+                <div className="mx-4 mb-4 animate-slide-up border border-gold/30 bg-obsidian p-4 md:hidden">
                     {SECTIONS.map((section) => (
                         <a key={section.href} href={section.href} onClick={() => setOpen(false)} className="block py-3 text-sm font-medium uppercase tracking-[0.16em] text-ivory/90">
                             {section.label}

@@ -2,6 +2,7 @@ import kitchenImage from '@images/resto.jpg';
 import cashierImage from '@images/resto2.jpg';
 import receiptImage from '@images/resto3.jpg';
 
+import Reveal from '@/Components/Shared/Reveal';
 import { cx } from '@/Utils/classNames';
 
 import { SectionTitle } from '@/Pages/Landing/Partials/shared';
@@ -23,7 +24,7 @@ export default function AboutSection() {
     return (
         <section id="tentang" className="py-20 sm:py-24">
             <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:gap-16">
-                <div className="text-center lg:text-left">
+                <Reveal from="left" className="text-center lg:text-left">
                     <p className="font-script text-2xl text-gold sm:text-[1.75rem]">Mengapa memilih kami</p>
                     <SectionTitle className="mt-3 text-ivory">
                         Restoran digital untuk <em className="font-medium text-gold">usaha kecil</em> yang ingin naik kelas
@@ -40,14 +41,14 @@ export default function AboutSection() {
                             </div>
                         ))}
                     </dl>
-                </div>
+                </Reveal>
 
                 <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                    {PHOTOS.map((photo) => (
-                        <figure key={photo.caption} className={cx('relative overflow-hidden border border-gold/30', photo.className)}>
-                            <img src={photo.src} alt={photo.alt} loading="lazy" className="h-full w-full object-cover" />
+                    {PHOTOS.map((photo, index) => (
+                        <Reveal as="figure" key={photo.caption} from="right" delay={150 + index * 150} className={cx('group relative overflow-hidden border border-gold/30', photo.className)}>
+                            <img src={photo.src} alt={photo.alt} loading="lazy" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
                             <figcaption className="absolute bottom-0 left-0 bg-navy px-4 py-1.5 font-script text-lg text-gold">{photo.caption}</figcaption>
-                        </figure>
+                        </Reveal>
                     ))}
                 </div>
             </div>

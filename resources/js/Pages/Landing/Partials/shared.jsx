@@ -34,13 +34,13 @@ export function LandingButton({ href, variant = 'crimson', className = '', child
         <Link
             href={href}
             className={cx(
-                'inline-flex items-center justify-center gap-2 px-7 py-3.5 text-[13px] font-semibold uppercase tracking-[0.2em] transition-colors',
+                'group inline-flex items-center justify-center gap-2 px-7 py-3.5 text-[13px] font-semibold uppercase tracking-[0.2em] transition-colors',
                 BUTTON_VARIANTS[variant],
                 className,
             )}
         >
             {children}
-            <ArrowUpRight className="h-4 w-4" strokeWidth={1.6} aria-hidden="true" />
+            <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" strokeWidth={1.6} aria-hidden="true" />
         </Link>
     );
 }

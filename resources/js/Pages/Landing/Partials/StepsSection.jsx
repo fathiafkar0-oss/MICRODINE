@@ -1,5 +1,6 @@
 import { ScanLine, Utensils, Wallet } from 'lucide-react';
 
+import Reveal from '@/Components/Shared/Reveal';
 import heroImage from '@images/hero-restoran.jpg';
 import specialImage from '@images/menu/makanan-3.jpg';
 import receiptImage from '@images/resto3.jpg';
@@ -18,15 +19,15 @@ export default function StepsSection() {
     return (
         <section id="cara-pesan" className="bg-navy-soft py-20 sm:py-24">
             <div className="mx-auto max-w-6xl px-4 sm:px-6">
-                <div className="text-center">
+                <Reveal className="text-center">
                     <Kicker>Cara memesan</Kicker>
                     <SectionTitle className="mt-3 text-ivory">Cukup Tiga Langkah</SectionTitle>
-                </div>
+                </Reveal>
                 <ol className="mt-14 grid gap-6 sm:grid-cols-3">
                     {STEPS.map(({ image, position, icon: Icon, title, text }, index) => (
-                        <li key={title} className="border border-gold/25 bg-navy">
+                        <Reveal as="li" key={title} delay={index * 150} className="group border border-gold/25 bg-navy">
                             <div className="relative h-48 overflow-hidden">
-                                <img src={image} alt="" aria-hidden="true" loading="lazy" className={`h-full w-full object-cover ${position}`} />
+                                <img src={image} alt="" aria-hidden="true" loading="lazy" className={`h-full w-full object-cover transition-transform duration-700 group-hover:scale-105 ${position}`} />
                                 <span className="absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full border border-gold bg-navy">
                                     <Icon className="h-[18px] w-[18px] text-gold" strokeWidth={1.4} aria-hidden="true" />
                                 </span>
@@ -36,7 +37,7 @@ export default function StepsSection() {
                                 <h3 className="mt-1 font-display text-2xl font-semibold text-ivory">{title}</h3>
                                 <p className="mt-2 text-[15px] leading-relaxed">{text}</p>
                             </div>
-                        </li>
+                        </Reveal>
                     ))}
                 </ol>
             </div>

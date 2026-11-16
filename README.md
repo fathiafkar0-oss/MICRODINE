@@ -57,7 +57,7 @@ npm run dev                   # terminal 2 → Vite (hot reload)
 
 Untuk demo tanpa `npm run dev`, cukup `npm run build` sekali lalu `php artisan serve`.
 
-Font (Plus Jakarta Sans) sudah ikut di-bundle lewat `@fontsource`, jadi tampilan tetap benar walau internet di lokasi lomba bermasalah.
+Font (Plus Jakarta Sans untuk aplikasi, Cormorant Garamond untuk judul halaman awal) sudah ikut di-bundle lewat `@fontsource`, jadi tampilan tetap benar walau internet di lokasi lomba bermasalah.
 
 ---
 
@@ -65,7 +65,7 @@ Font (Plus Jakarta Sans) sudah ikut di-bundle lewat `@fontsource`, jadi tampilan
 
 | URL | Halaman (`resources/js/Pages/…`) | Peran |
 |---|---|---|
-| `/` | `Welcome` — halaman awal + jalan pintas demo | Publik |
+| `/` | `Landing/Index` — halaman awal (landing page) + jalan pintas demo | Publik |
 | `/meja/07` | `Customer/Menu/Index` — menu hasil scan QR meja 07 | Pelanggan |
 | `/meja/07/keranjang` | `Customer/Cart/Index` — keranjang + catatan per item | Pelanggan |
 | `/meja/07/checkout` | `Customer/Checkout/Index` — nama pemesan + pilih QRIS / tunai | Pelanggan |
@@ -101,7 +101,7 @@ resources/
     │   ├── UI/                   Komponen dasar: Button, Input (+Select, Textarea), Modal, Badge,
     │   │                         Card, Table, Toggle, StatCard, MenuThumb, QuantityStepper, TrendChart
     │   └── Shared/               Komponen bersama: Sidebar, Navbar, SearchBar, Pagination, PageHeader,
-    │                             FilterChips, Logo, LiveBadge, OrderCard, CashPaymentModal
+    │                             FilterChips, Logo, LiveBadge, OrderCard, CashPaymentModal, Ornament
     ├── Layouts/                  AdminLayout, CashierLayout, KitchenLayout, CustomerLayout
     ├── Pages/
     │   ├── Auth/Login.jsx
@@ -109,7 +109,7 @@ resources/
     │   ├── Cashier/              Dashboard, Orders, Tables, History  (+ Partials/)
     │   ├── Kitchen/              Dashboard  (+ Partials/)
     │   ├── Admin/                Dashboard, Menus, Reports, Targets, Settings  (+ Partials/)
-    │   └── Welcome.jsx
+    │   └── Landing/              Index  (+ Partials/: Hero, Fitur, Tentang, Menu, Langkah, Footer)
     ├── Hooks/                    useCart, useCurrency, useCountdown
     ├── Utils/                    formatCurrency, formatDate, status, classNames, navigation,
     │                             orderStorage, salesTarget

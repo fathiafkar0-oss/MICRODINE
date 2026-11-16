@@ -17,7 +17,7 @@ use Inertia\Inertia;
 |
 */
 
-Route::inertia('/', 'Welcome')->name('home');
+Route::inertia('/', 'Landing/Index')->name('home');
 
 // ---------------------------------------------------------------- Pelanggan
 // URL yang dicetak di QR meja: /meja/{nomor}, mis. /meja/07

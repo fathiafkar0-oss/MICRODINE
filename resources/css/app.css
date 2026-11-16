@@ -1,5 +1,10 @@
 @import 'tailwindcss';
 @import '@fontsource-variable/plus-jakarta-sans';
+/* Serif klasik khusus halaman awal (landing), sama seperti project cashier sebelumnya */
+@import '@fontsource/cormorant-garamond/500.css';
+@import '@fontsource/cormorant-garamond/600.css';
+@import '@fontsource/cormorant-garamond/500-italic.css';
+@import '@fontsource/cormorant-garamond/600-italic.css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -11,21 +16,26 @@
  * Aturan pakai singkat:
  * - Latar halaman: bg-canvas · kartu: bg-panel + border-line
  * - Aksi utama: bg-gold text-obsidian (tombol pil) · aksi kedua: bg-navy text-white
- * - Status selalu memakai label teks, bukan warna saja (lihat lib/status.js)
+ * - Status selalu memakai label teks, bukan warna saja (lihat Utils/status.js)
+ * - font-display & font-script (serif) hanya untuk halaman awal; halaman aplikasi memakai font-sans
  */
 @theme {
     --font-sans: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Cormorant Garamond', ui-serif, Georgia, serif;
 
     /* Warna merek */
     --color-navy: #0a1d4b;
     --color-navy-hover: #162c68;
     --color-navy-soft: #1c2f63;
     --color-crimson: #9e0e18;
+    --color-crimson-dark: #7e0b13;
     --color-gold: #cc9e4a;
     --color-gold-hover: #b98a35;
     --color-gold-soft: #f2cf87;
     --color-gold-tint: #faf0dc;
     --color-ivory: #f4e8db;
+    --color-ivory-paper: #fdf8f2;
+    --color-ivory-line: #e2d0be;
     --color-obsidian: #171721;
 
     /* Permukaan & teks */
@@ -114,6 +124,13 @@
         outline: 2px solid var(--color-navy);
         outline-offset: 2px;
     }
+}
+
+/* Teks miring berhias (kicker "Selamat datang ..."), dipakai bersama font-display */
+@utility font-script {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 500;
 }
 
 @utility scrollbar-none {

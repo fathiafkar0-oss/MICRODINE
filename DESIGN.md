@@ -75,6 +75,11 @@ Repositori mengadopsi arsitektur **Tailwind CSS v4** dengan plugin `@tailwindcss
 /* resources/css/app.css */
 @import 'tailwindcss';
 @import '@fontsource-variable/plus-jakarta-sans';
+/* Serif klasik khusus halaman awal (landing) */
+@import '@fontsource/cormorant-garamond/500.css';
+@import '@fontsource/cormorant-garamond/600.css';
+@import '@fontsource/cormorant-garamond/500-italic.css';
+@import '@fontsource/cormorant-garamond/600-italic.css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
@@ -87,9 +92,11 @@ Repositori mengadopsi arsitektur **Tailwind CSS v4** dengan plugin `@tailwindcss
  * - Latar halaman: bg-canvas · kartu: bg-panel + border-line
  * - Aksi utama: bg-gold text-obsidian (tombol pil) · aksi kedua: bg-navy text-white
  * - Status selalu memakai label teks, bukan warna saja
+ * - font-display & font-script (serif) hanya untuk halaman awal; antarmuka aplikasi memakai font-sans
  */
 @theme {
     --font-sans: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Cormorant Garamond', ui-serif, Georgia, serif;
 
     /* Warna merek */
     --color-navy: #0a1d4b;
@@ -147,6 +154,13 @@ Repositori mengadopsi arsitektur **Tailwind CSS v4** dengan plugin `@tailwindcss
         outline: 2px solid var(--color-navy);
         outline-offset: 2px;
     }
+}
+
+/* Teks miring berhias, dipakai bersama font-display di landing */
+@utility font-script {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 500;
 }
 
 @utility scrollbar-none {

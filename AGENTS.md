@@ -24,7 +24,7 @@ app/
 ├── Http/Requests/            # FormRequest validation classes
 ├── Models/                   # Eloquent models with strict typing & casts
 resources/js/
-├── Pages/                    # Inertia view pages (Customer/, Cashier/, Kitchen/, Admin/, Auth/, Welcome.jsx)
+├── Pages/                    # Inertia view pages (Customer/, Cashier/, Kitchen/, Admin/, Auth/, Landing/)
 ├── Components/
 │   ├── UI/                   # Base UI components (Button, Input, Card, Modal, Table, Toggle, StatCard)
 │   └── Shared/               # Domain composite widgets (Navbar, Sidebar, CashPaymentModal, SearchBar)

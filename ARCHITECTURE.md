@@ -170,7 +170,9 @@ MICRODINE/
 │   │   │   ├── Settings.jsx           # Pajak daerah PBJT/PB1 & kelola meja
 │   │   │   ├── Cashiers.jsx           # CRUD staf kasir
 │   │   │   └── Targets.jsx            # Target omzet bulanan & proyeksi harian
-│   │   └── Welcome.jsx                # Landing page selamat datang & pemilih peran demo
+│   │   └── Landing/
+│   │       ├── Index.jsx              # Landing page selamat datang & pemilih peran demo
+│   │       └── Partials/              # HeroSection, MenuSection, AboutSection, Steps, Footer
 │   ├── Components/
 │   │   ├── UI/                        # Komponen UI dasar
 │   │   │   ├── Button.jsx, Input.jsx, Card.jsx, Modal.jsx, Table.jsx, Toggle.jsx
@@ -878,7 +880,7 @@ use App\Http\Controllers\Admin\SalesTargetController;
 use App\Http\Controllers\Webhooks\MidtransWebhookController;
 
 // 1. HALAMAN UTAMA / DEMO SELECTOR
-Route::inertia('/', 'Welcome')->name('home');
+Route::inertia('/', 'Landing/Index')->name('home');
 
 // 2. RUTE PUBLIK PELANGGAN (Mobile-First Self-Ordering)
 // URL yang dicetak pada stiker QR meja: /meja/{table}, contoh: /meja/07

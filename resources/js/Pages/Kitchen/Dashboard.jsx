@@ -1,0 +1,59 @@
+import { CircleCheck, Flame } from 'lucide-react';
+import { useState } from 'react';
+import toast from 'react-hot-toast';
+
+import StatCard from '@/Components/UI/StatCard';
+import { orders as mockOrders } from '@/Data/mock/orders';
+import KitchenLayout from '@/Layouts/KitchenLayout';
+import KitchenTicket from '@/Pages/Kitchen/Partials/KitchenTicket';
+
+/**
+ * Layar dapur (Kitchen Display System): hanya pesanan yang sudah LUNAS.
+ * Route: GET /dapur
+ * Real-time: pesanan baru masuk lewat event WebSocket saat status berubah menjadi Diproses.
+ * Backend: PATCH /dapur/pesanan/{code}/selesai
+ */
+export default function KitchenDashboard({ orders: initial = mockOrders.filter((order) => order.status === 'diproses'), doneToday = 27 }) {
+    const [orders, setOrders] = useState(initial);
+    const [done, setDone] = useState(doneToday);
+    const sorted = [...orders].sort((a, b) => b.minutesAgo - a.minutesAgo);
+
+    const markDone = (order) => {
+        setOrders((prev) => prev.filter((item) => item.code !== order.code));
+        setDone((value) => value + 1);
+        toast.success(`${order.code} selesai · kasir & pelanggan diberi tahu`);
+    };
+
+    const summary = (
+        <div className="grid gap-3 text-ink sm:grid-cols-2 lg:w-1/2">
+            <StatCard icon={Flame} tone="warn" label="Sedang diproses" value={orders.length} className="border-transparent" />
+            <StatCard icon={CircleCheck} tone="success" label="Selesai hari ini" value={done} className="border-transparent" />
+        </div>
+    );
+
+    return (
+        <KitchenLayout summary={summary}>
+            <div className="mb-4 flex items-center justify-between">
+                <h2 className="flex items-center gap-2 text-lg font-extrabold text-navy">
+                    <span className="h-2.5 w-2.5 rounded-full bg-info" aria-hidden="true" />
+                    Diproses · urut dari yang terlama
+                </h2>
+                <span className="rounded-full bg-navy px-3 py-1 text-sm font-bold text-white">{orders.length}</span>
+            </div>
+
+            {sorted.length === 0 ? (
+                <div className="rounded-3xl border border-dashed border-line-strong bg-panel px-6 py-20 text-center">
+                    <CircleCheck className="mx-auto h-12 w-12 text-success" aria-hidden="true" />
+                    <p className="mt-3 text-xl font-extrabold text-navy">Semua pesanan sudah selesai</p>
+                    <p className="mt-1 text-faint">Pesanan baru yang lunas akan muncul otomatis di sini.</p>
+                </div>
+            ) : (
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+                    {sorted.map((order) => (
+                        <KitchenTicket key={order.code} order={order} onDone={markDone} />
+                    ))}
+                </div>
+            )}
+        </KitchenLayout>
+    );
+}

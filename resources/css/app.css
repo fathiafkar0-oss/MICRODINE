@@ -1,0 +1,140 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/plus-jakarta-sans';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+/*
+ * Token desain MICRODINE, mengikuti mockup proposal (BAB II 2.3).
+ * Palet: Regal Navy, Deep Crimson, Opulent Gold, Ethereal Ivory, Velvet Obsidian.
+ *
+ * Aturan pakai singkat:
+ * - Latar halaman: bg-canvas · kartu: bg-panel + border-line
+ * - Aksi utama: bg-gold text-obsidian (tombol pil) · aksi kedua: bg-navy text-white
+ * - Status selalu memakai label teks, bukan warna saja (lihat lib/status.js)
+ */
+@theme {
+    --font-sans: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+
+    /* Warna merek */
+    --color-navy: #0a1d4b;
+    --color-navy-hover: #162c68;
+    --color-navy-soft: #1c2f63;
+    --color-crimson: #9e0e18;
+    --color-gold: #cc9e4a;
+    --color-gold-hover: #b98a35;
+    --color-gold-soft: #f2cf87;
+    --color-gold-tint: #faf0dc;
+    --color-ivory: #f4e8db;
+    --color-obsidian: #171721;
+
+    /* Permukaan & teks */
+    --color-canvas: #f4e8db;
+    --color-panel: #fffcf7;
+    --color-raised: #f8efe4;
+    --color-line: #e9dccb;
+    --color-line-strong: #d3c1a8;
+    --color-ink: #171721;
+    --color-soft: #474a59;
+    --color-faint: #686b78;
+
+    /* Status (selalu dipasangkan dengan label teks) */
+    --color-success: #1e6f48;
+    --color-success-tint: #e1f0e6;
+    --color-danger: #9e0e18;
+    --color-danger-tint: #f7e0e2;
+    --color-warn: #7a5410;
+    --color-warn-tint: #f6e7c9;
+    --color-info: #34446e;
+    --color-info-tint: #e6e9f1;
+
+    --radius-card: 16px;
+
+    --animate-fade-in: fade-in 160ms ease-out;
+    --animate-slide-up: slide-up 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    --animate-pop-in: pop-in 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+
+    @keyframes fade-in {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes slide-up {
+        from {
+            opacity: 0;
+            transform: translateY(16px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes pop-in {
+        from {
+            opacity: 0;
+            transform: scale(0.97);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+}
+
+@layer base {
+    html {
+        -webkit-text-size-adjust: 100%;
+        background-color: var(--color-canvas);
+    }
+
+    body {
+        font-family: var(--font-sans);
+        font-feature-settings: 'tnum' 1;
+        color: var(--color-ink);
+        -webkit-font-smoothing: antialiased;
+    }
+
+    h1,
+    h2,
+    h3 {
+        letter-spacing: -0.01em;
+    }
+
+    button:not(:disabled),
+    [role='button']:not(:disabled) {
+        cursor: pointer;
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--color-navy);
+        outline-offset: 2px;
+    }
+}
+
+@utility scrollbar-none {
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
+/* Ubin foto menu cadangan (gradasi cokelat seperti di mockup proposal) */
+@utility menu-tile {
+    background-image: linear-gradient(135deg, #b8742f 0%, #7a3b16 100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 1ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 1ms !important;
+    }
+}

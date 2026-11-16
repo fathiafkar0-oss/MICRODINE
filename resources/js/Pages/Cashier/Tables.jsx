@@ -1,0 +1,114 @@
+import { QrCode, RefreshCw, Users } from 'lucide-react';
+import { useState } from 'react';
+import toast from 'react-hot-toast';
+
+import PageHeader from '@/Components/Shared/PageHeader';
+import { TableStatusBadge } from '@/Components/UI/Badge';
+import Button from '@/Components/UI/Button';
+import Modal from '@/Components/UI/Modal';
+import { orders as mockOrders } from '@/Data/mock/orders';
+import { tables as mockTables } from '@/Data/mock/tables';
+import CashierLayout from '@/Layouts/CashierLayout';
+import TableQrCard from '@/Pages/Cashier/Partials/TableQrCard';
+import { cx } from '@/Utils/classNames';
+
+/** Fase frontend: status meja diturunkan dari pesanan aktif (meja dengan pesanan = Terisi). */
+function withSessions(tables, orders) {
+    return tables.map((table) => {
+        const active = orders.filter((order) => order.table === table.number);
+        const oldest = [...active].sort((a, b) => b.minutesAgo - a.minutesAgo)[0];
+        return { ...table, status: active.length ? 'terisi' : 'tersedia', session: oldest ? { code: oldest.code, customer: oldest.customer, minutes: oldest.minutesAgo } : null };
+    });
+}
+
+/**
+ * Manajemen meja: status, tutup sesi, QR & barcode per meja.
+ * Route: GET /kasir/meja
+ * Props backend: tables [{ number, seats, area, status, session }], appUrl
+ */
+export default function CashierTables({ tables: tableProp, appUrl = typeof window !== 'undefined' ? window.location.origin : '' }) {
+    const [tables, setTables] = useState(() => tableProp ?? withSessions(mockTables, mockOrders));
+    const [qrTable, setQrTable] = useState(null);
+    const [closing, setClosing] = useState(null);
+    const free = tables.filter((table) => table.status === 'tersedia').length;
+
+    const closeSession = (number) => {
+        setTables((prev) => prev.map((table) => (table.number === number ? { ...table, status: 'tersedia', session: null } : table)));
+        setClosing(null);
+        toast.success(`Sesi Meja ${number} ditutup. Meja kembali tersedia.`);
+    };
+
+    return (
+        <CashierLayout title="Manajemen Meja">
+            <PageHeader
+                title="Manajemen Meja"
+                subtitle={`${free} tersedia · ${tables.length - free} terisi · total ${tables.length} meja`}
+                actions={
+                    <>
+                        <TableStatusBadge status="tersedia" />
+                        <TableStatusBadge status="terisi" />
+                        <button type="button" aria-label="Muat ulang status meja" onClick={() => toast('Status meja sudah terbaru')} className="grid h-10 w-10 place-items-center rounded-xl bg-gold-soft text-obsidian hover:bg-gold">
+                            <RefreshCw className="h-4 w-4" />
+                        </button>
+                    </>
+                }
+            />
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {tables.map((table) => (
+                    <article key={table.number} className={cx('flex flex-col rounded-[18px] border bg-panel p-4', table.status === 'terisi' ? 'border-navy/70' : 'border-line')}>
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-lg font-extrabold text-navy">Meja {table.number}</h2>
+                            <TableStatusBadge status={table.status} />
+                        </div>
+                        <p className="mt-1 flex items-center gap-1.5 text-xs text-faint">
+                            <Users className="h-3.5 w-3.5" aria-hidden="true" />
+                            {table.seats} kursi · {table.area}
+                        </p>
+
+                        {table.session ? (
+                            <div className="mt-3 rounded-xl bg-info-tint px-3 py-2 text-[13px]">
+                                <span className="font-bold text-navy">{table.session.code}</span>
+                                <span className="ml-2 text-soft">
+                                    {table.session.customer} · {table.session.minutes} mnt
+                                </span>
+                            </div>
+                        ) : (
+                            <p className="mt-3 rounded-xl border border-dashed border-line-strong px-3 py-2 text-[13px] text-faint">Siap dipakai</p>
+                        )}
+
+                        <div className="mt-3 flex flex-col gap-2">
+                            <Button variant="outline" block onClick={() => setQrTable(table)}>
+                                <QrCode className="h-4 w-4" aria-hidden="true" />
+                                Lihat QR Meja
+                            </Button>
+                            {table.status === 'terisi' && (
+                                <Button variant="ghost" size="sm" block className="text-danger hover:bg-danger-tint hover:text-danger" onClick={() => setClosing(table)}>
+                                    Tutup Sesi Meja
+                                </Button>
+                            )}
+                        </div>
+                    </article>
+                ))}
+            </div>
+
+            <Modal open={Boolean(qrTable)} onClose={() => setQrTable(null)} title={`QR Meja ${qrTable?.number ?? ''}`} subtitle="Cetak dan tempel di meja. Pelanggan memindai QR; kasir memindai barcode." width="max-w-md">
+                {qrTable && <TableQrCard table={qrTable} appUrl={appUrl} />}
+            </Modal>
+
+            <Modal open={Boolean(closing)} onClose={() => setClosing(null)} title={`Tutup sesi Meja ${closing?.number ?? ''}?`} subtitle="Lakukan setelah pelanggan meninggalkan meja." width="max-w-sm">
+                <p className="text-sm text-soft">
+                    Meja akan kembali <strong className="text-success">Tersedia</strong> dan pemindaian QR berikutnya dianggap pelanggan baru. Pesanan yang sudah lunas tetap tercatat di histori.
+                </p>
+                <div className="mt-5 grid grid-cols-2 gap-3">
+                    <Button variant="outline" onClick={() => setClosing(null)}>
+                        Batal
+                    </Button>
+                    <Button variant="navy" onClick={() => closeSession(closing.number)}>
+                        Tutup Sesi
+                    </Button>
+                </div>
+            </Modal>
+        </CashierLayout>
+    );
+}

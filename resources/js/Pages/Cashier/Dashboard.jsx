@@ -76,6 +76,23 @@ export default function CashierDashboard({ orders: initialOrders = mockOrders, r
         router.post(`/kasir/pesanan/${order.id}/serve`, {}, { preserveScroll: true, onFinish: () => setBusyCode(null) });
     };
 
+    const simulateQris = async (order) => {
+        setBusyCode(order.code);
+        try {
+            const response = await fetch(`/api/v1/payments/simulate/${order.code}`, {
+                method: 'POST',
+                headers: { Accept: 'application/json' },
+            });
+            if (!response.ok) throw new Error();
+            toast.success(`Pembayaran QRIS ${order.code} berhasil diverifikasi.`);
+            router.reload({ only: ['orders', 'stats'] });
+        } catch {
+            toast.error('Gagal memverifikasi pembayaran QRIS.');
+        } finally {
+            setBusyCode(null);
+        }
+    };
+
     const actionFor = (order) => {
         const busy = busyCode === order.code;
         if (order.status === 'menunggu_bayar') {
@@ -84,7 +101,12 @@ export default function CashierDashboard({ orders: initialOrders = mockOrders, r
                     Terima Tunai
                 </Button>
             ) : (
-                <p className="rounded-xl bg-raised px-3 py-2.5 text-center text-xs font-semibold text-soft">Menunggu notifikasi QRIS…</p>
+                <div className="space-y-1.5">
+                    <p className="rounded-xl bg-raised px-3 py-1.5 text-center text-xs font-semibold text-soft">Menunggu notifikasi QRIS…</p>
+                    <Button variant="outline" size="sm" block disabled={busy} onClick={() => simulateQris(order)}>
+                        {busy ? 'Memproses…' : 'Simulasi Bayar QRIS'}
+                    </Button>
+                </div>
             );
         }
         if (order.status === 'diproses') {

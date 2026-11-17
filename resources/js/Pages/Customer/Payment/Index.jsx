@@ -1,7 +1,7 @@
 import { router } from '@inertiajs/react';
 import { Download, Timer } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 
 import { OrderStatusBadge } from '@/Components/UI/Badge';
@@ -28,6 +28,26 @@ export default function PaymentIndex({ code = 'A-029', order: orderProp, restaur
     const { total } = bill(order.items);
     const countdown = useCountdown((order.createdAt ?? Date.now()) + restaurant.paymentDeadlineMinutes * 60 * 1000);
     const isQris = order.method === 'qris';
+
+    useEffect(() => {
+        const interval = setInterval(async () => {
+            try {
+                const response = await fetch(`/api/v1/sync?order_code=${order.code}`);
+                if (response.ok) {
+                    const json = await response.json();
+                    if (json?.data?.paymentStatus === 'paid') {
+                        clearInterval(interval);
+                        toast.success('Pembayaran terkonfirmasi! Mengalihkan ke status pesanan...');
+                        router.visit(`/pesanan/${order.code}`);
+                    }
+                }
+            } catch {
+                // ignore
+            }
+        }, 3000);
+
+        return () => clearInterval(interval);
+    }, [order.code]);
 
     const switchMethod = (method) => {
         const next = { ...order, method };

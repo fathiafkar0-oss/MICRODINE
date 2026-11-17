@@ -6,6 +6,7 @@ import Button from '@/Components/UI/Button';
 import Card from '@/Components/UI/Card';
 import { restaurant as mockRestaurant } from '@/Data/mock/restaurant';
 import useCurrency from '@/Hooks/useCurrency';
+import useLiveReload from '@/Hooks/useLiveReload';
 import CustomerLayout, { TablePill } from '@/Layouts/CustomerLayout';
 import { cx } from '@/Utils/classNames';
 import SessionOrders from '@/Pages/Customer/Order/Partials/SessionOrders';
@@ -22,6 +23,7 @@ export default function OrderStatus({ code = 'A-024', order: orderProp, sessionO
     const order = useMemo(() => resolveOrder(code, orderProp), [code, orderProp]);
     const tableOrders = useMemo(() => sessionProp ?? sessionOrders(order.table), [sessionProp, order.table]);
     const { format, bill } = useCurrency(restaurant);
+    useLiveReload('order.' + code, ['.order.paid', '.order.kitchen-status-updated'], ['order', 'sessionOrders']);
     const { total } = bill(order.items);
     const totalOf = (item) => bill(item.items).total;
     const session = <SessionOrders table={order.table} orders={tableOrders} currentCode={order.code} totalOf={totalOf} format={format} />;

@@ -65,7 +65,13 @@ class OrderStatusController extends Controller
             ->whereDate('created_at', now()->toDateString())
             ->where('daily_queue_number', $code)
             ->with(['items', 'tableSession.diningTable', 'tableSession.orders'])
-            ->first();
+            ->latest('id')
+            ->first()
+            ?? Order::query()
+                ->where('daily_queue_number', $code)
+                ->with(['items', 'tableSession.diningTable', 'tableSession.orders'])
+                ->latest('id')
+                ->first();
 
         if ($order === null) {
             throw new NotFoundHttpException('Pesanan tidak ditemukan.');

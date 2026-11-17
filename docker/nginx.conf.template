@@ -1,0 +1,52 @@
+# Template Nginx untuk container Docker. ${PORT} diisi otomatis saat
+# container start (lihat docker/entrypoint.sh) — Railway menentukan nomor
+# port publiknya secara dinamis lewat variabel environment PORT.
+server {
+    listen ${PORT};
+    listen [::]:${PORT};
+    server_name _;
+
+    root /var/www/html/public;
+    index index.php;
+
+    client_max_body_size 20M;
+    charset utf-8;
+
+    access_log /dev/stdout;
+    error_log  /dev/stderr;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location = /robots.txt  { access_log off; log_not_found off; }
+
+    location ~ \.php$ {
+        include fastcgi_params;
+        fastcgi_pass 127.0.0.1:9000;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_hide_header X-Powered-By;
+    }
+
+    location ~ /\.(?!well-known).* {
+        deny all;
+    }
+
+    # WebSocket Laravel Reverb — Reverb jalan secara INTERNAL di 127.0.0.1:6001
+    # (lihat docker/supervisord.conf), hanya bisa diakses lewat proxy ini.
+    # Laravel Echo di browser otomatis minta path /app/{key} sesuai protokol
+    # Pusher/Reverb, jadi path ini tidak perlu diubah di sisi frontend.
+    location /app/ {
+        proxy_pass http://127.0.0.1:6001;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 60s;
+    }
+}

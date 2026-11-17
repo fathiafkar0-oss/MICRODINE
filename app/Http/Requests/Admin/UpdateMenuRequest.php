@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class UpdateMenuRequest extends FormRequest
@@ -10,6 +11,41 @@ class UpdateMenuRequest extends FormRequest
     public function authorize(): bool
     {
         return true;
+    }
+
+    /**
+     * DIAGNOSTIK SEMENTARA - hapus setelah masalah unggah foto selesai.
+     * Mencatat kode error PHP untuk berkas yang masuk, supaya ketahuan kenapa
+     * validasi 'uploaded' gagal padahal berkasnya kecil.
+     */
+    protected function prepareForValidation(): void
+    {
+        $files = [];
+
+        foreach ($_FILES as $key => $info) {
+            $files[$key] = [
+                'name' => $info['name'] ?? null,
+                'size' => $info['size'] ?? null,
+                'error' => $info['error'] ?? null,
+                'tmp_name' => $info['tmp_name'] ?? null,
+                'tmp_exists' => isset($info['tmp_name']) && $info['tmp_name'] !== '' && file_exists($info['tmp_name']),
+            ];
+        }
+
+        Log::info('UPLOAD-DEBUG', [
+            'method' => $this->getMethod(),
+            'content_length' => $_SERVER['CONTENT_LENGTH'] ?? null,
+            'content_type' => $_SERVER['CONTENT_TYPE'] ?? null,
+            'files' => $files,
+            'has_image' => $this->hasFile('image'),
+            'image_input_type' => gettype($this->input('image')),
+            'upload_tmp_dir' => ini_get('upload_tmp_dir'),
+            'sys_temp' => sys_get_temp_dir(),
+            'sys_temp_writable' => is_writable(sys_get_temp_dir()),
+            'upload_max_filesize' => ini_get('upload_max_filesize'),
+            'post_max_size' => ini_get('post_max_size'),
+            'file_uploads' => ini_get('file_uploads'),
+        ]);
     }
 
     /**

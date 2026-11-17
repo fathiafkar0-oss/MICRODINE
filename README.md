@@ -7,10 +7,11 @@ MICRODINE adalah platform manajemen restoran skala mikro terpadu berbasis web ya
 ---
 
 ## Status Proyek
-**Dalam Pengembangan** (*Under Active Development*)
+**Siap didemonstrasikan** (*Hackathon-ready*) — alur inti **Scan QR → Pay-First → Real-time KDS →
+Snapshot Laba** sudah berjalan penuh dengan database sungguhan (bukan lagi data contoh/mock).
 
-> **Fase 1 — Frontend selesai.** Semua halaman sudah bisa dibuka dan diklik dengan **data contoh**
-> (`resources/js/Data/mock/`). Backend (database, autentikasi, payment gateway, WebSocket) dikerjakan di fase berikutnya.
+> Ingin membawakan demo ke juri? Ikuti **[`docs/DEMO_SCRIPT.md`](docs/DEMO_SCRIPT.md)** — skrip
+> langkah-demi-langkah berdurasi 4–5 menit.
 
 ---
 
@@ -25,10 +26,12 @@ MICRODINE adalah platform manajemen restoran skala mikro terpadu berbasis web ya
 ---
 
 ## Tumpukan Teknologi (Tech Stack)
-- **Backend Framework**: Laravel (PHP)
-- **Frontend Architecture**: React (Single Page Application via Inertia.js)
-- **Database**: PostgreSQL (dengan dukungan row-level locking)
-- **Real-Time Synchronization**: WebSockets
+- **Backend**: Laravel 13.x (PHP 8.3+), arsitektur monolit (satu basis kode, tanpa REST API terpisah)
+- **Frontend**: React 19+ via Inertia.js v3 (SPA)
+- **Styling**: Tailwind CSS v4
+- **Database**: PostgreSQL 16+ (dengan dukungan row-level/pessimistic locking)
+- **Real-Time Synchronization**: Laravel Reverb + Laravel Echo (WebSocket, tanpa refresh manual)
+- **Payment Gateway**: QRIS via `PaymentGatewayInterface` (sandbox Midtrans + simulator demo offline)
 
 ---
 
@@ -37,9 +40,10 @@ MICRODINE adalah platform manajemen restoran skala mikro terpadu berbasis web ya
 
 ---
 
-## Menjalankan di laptop
+## Menjalankan di laptop (setup lengkap, < 5 menit)
 
-Butuh **PHP 8.3+**, **Composer**, dan **Node.js 20+**.
+**Kebutuhan**: PHP **8.3+**, **Composer**, **Node.js 20+**, dan **PostgreSQL 16+** yang sudah
+menyala (lihat ARCHITECTURE.md Bab 3 untuk alasan memilih PostgreSQL).
 
 ```bash
 composer install
@@ -48,16 +52,76 @@ php artisan key:generate
 npm install
 ```
 
-Lalu jalankan dua terminal:
+### 1. Konfigurasi `.env` — Database
+
+Buat database kosong bernama `microdine` di PostgreSQL, lalu isi bagian `DB_*` di `.env` sesuai
+kredensial lokal (`DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD`) — nilai bawaan (`.env.example`)
+sudah mengarah ke `127.0.0.1:5432`, database `microdine`, user `postgres`.
+
+```bash
+php artisan migrate --seed
+```
+
+Seeder akan membuat data demo lengkap: akun staf, kategori & menu + HPP, meja, target penjualan
+14 hari, dan beberapa transaksi contoh (`database/seeders/DemoTransactionSeeder.php`).
+
+**Akun staf bawaan** (password selalu `password`):
+
+| Username | Peran | Masuk lewat |
+|---|---|---|
+| `admin` | Admin | `/staf/masuk` |
+| `kasir` | Kasir | `/staf/masuk` |
+| `dapur` | Dapur | `/staf/masuk` |
+
+### 2. Konfigurasi `.env` — Real-time (Laravel Reverb)
+
+Modul real-time (layar dapur & kasir yang ter-update otomatis tanpa refresh) memakai
+[Laravel Reverb](https://laravel.com/docs/reverb). Paket ini **tidak** ikut di-*commit* ke repo
+(butuh unduhan dari Packagist), jadi pasang sekali saja di laptop masing-masing:
+
+```bash
+composer require laravel/reverb
+php artisan reverb:install   # otomatis mengisi REVERB_* di .env & membuat config/reverb.php
+```
+
+Setelah itu, pastikan di `.env`:
+
+```env
+BROADCAST_CONNECTION=reverb   # bukan `log` — `reverb:install` tidak selalu mengubah baris ini otomatis
+```
+
+> Tanpa `laravel/reverb` terpasang / tanpa langkah ini, aplikasi **tetap bisa dipakai normal**
+> (`BROADCAST_CONNECTION=log` di `.env.example` adalah default yang aman) — hanya saja layar dapur
+> & kasir perlu refresh manual untuk melihat pesanan baru, alih-alih otomatis. Lihat
+> `resources/js/echo.js` (bootstrap Echo di sisi frontend hanya aktif kalau `VITE_REVERB_APP_KEY`
+> terisi) dan ARCHITECTURE.md Bab 6 & 8.2.
+
+### 3. Jalankan
+
+Opsi tercepat — satu perintah menyalakan server, Vite, queue listener, **dan** Reverb sekaligus:
+
+```bash
+composer run dev
+```
+
+Atau jalankan manual di terminal terpisah kalau perlu melihat log masing-masing proses:
 
 ```bash
 php artisan serve             # terminal 1 → http://127.0.0.1:8000
-npm run dev                   # terminal 2 → Vite (hot reload)
+php artisan reverb:start      # terminal 2 → WebSocket (lewati kalau belum pasang Reverb)
+npm run dev                   # terminal 3 → Vite (hot reload)
 ```
 
 Untuk demo tanpa `npm run dev`, cukup `npm run build` sekali lalu `php artisan serve`.
 
-Font (Plus Jakarta Sans untuk aplikasi, Cormorant Garamond untuk judul halaman awal) sudah ikut di-bundle lewat `@fontsource`, jadi tampilan tetap benar walau internet di lokasi lomba bermasalah.
+Font (Plus Jakarta Sans) sudah ikut di-bundle lewat `@fontsource`, jadi tampilan tetap benar walau
+internet di lokasi lomba bermasalah.
+
+### Deployment produksi
+
+Template konfigurasi Nginx & Supervisor (queue worker + daemon Reverb dengan auto-restart) ada di
+`deploy/nginx/` dan `deploy/supervisor/` — lihat komentar di masing-masing berkas sebelum dipasang
+di server. Lihat ARCHITECTURE.md Bab 12.2.
 
 ---
 
@@ -65,18 +129,18 @@ Font (Plus Jakarta Sans untuk aplikasi, Cormorant Garamond untuk judul halaman a
 
 | URL | Halaman (`resources/js/Pages/…`) | Peran |
 |---|---|---|
-| `/` | `Landing/Index` — halaman awal (landing page) + jalan pintas demo | Publik |
+| `/` | *(tidak ada landing page — langsung diarahkan ke `/staf/masuk`)* | — |
 | `/meja/07` | `Customer/Menu/Index` — menu hasil scan QR meja 07 | Pelanggan |
 | `/meja/07/keranjang` | `Customer/Cart/Index` — keranjang + catatan per item | Pelanggan |
 | `/meja/07/checkout` | `Customer/Checkout/Index` — nama pemesan + pilih QRIS / tunai | Pelanggan |
-| `/pesanan/A-028/bayar` | `Customer/Payment/Index` — QRIS + hitung mundur / instruksi tunai | Pelanggan |
+| `/pesanan/A-028/bayar` | `Customer/Payment/Index` — QRIS + hitung mundur / tombol simulasi demo | Pelanggan |
 | `/pesanan/A-024` | `Customer/Order/Status` — timeline pesanan dimasak | Pelanggan |
 | `/staf/masuk` | `Auth/Login` — portal masuk staf (Kasir / Dapur / Admin) | Staf |
-| `/kasir` | `Cashier/Dashboard` — antrean pesanan (Kanban) + terima tunai | Kasir |
+| `/kasir` | `Cashier/Dashboard` — antrean pesanan (Kanban) + terima tunai, live tanpa refresh | Kasir |
 | `/kasir/pesanan` | `Cashier/Orders` — pesanan manual + scan barcode meja (`MJ-07`) | Kasir |
-| `/kasir/meja` | `Cashier/Tables` — status meja, tutup sesi, QR & barcode | Kasir |
+| `/kasir/meja` | `Cashier/Tables` — status meja, tutup sesi, QR & barcode, live tanpa refresh | Kasir |
 | `/kasir/histori` | `Cashier/History` — histori harian + cetak ulang struk | Kasir |
-| `/dapur` | `Kitchen/Dashboard` — layar dapur (Kitchen Display) | Dapur |
+| `/dapur` | `Kitchen/Dashboard` — layar dapur (Kitchen Display), live tanpa refresh — cocok untuk TV dapur | Dapur |
 | `/admin` | `Admin/Dashboard` — ringkasan bisnis | Admin |
 | `/admin/menu` | `Admin/Menus` — menu & HPP + margin otomatis | Admin |
 | `/admin/analisis-menu` | `Admin/MenuAnalytics` — menu terlaris, paling diminati, matriks menu | Admin |
@@ -86,7 +150,8 @@ Font (Plus Jakarta Sans untuk aplikasi, Cormorant Garamond untuk judul halaman a
 | `/admin/pengaturan` | `Admin/Settings` — pajak, batas bayar, sesi meja, akun staf | Admin |
 
 Alur demo pelanggan: buka `/meja/07` → tambah menu → keranjang → checkout → di halaman pembayaran klik
-*"Mode demo: simulasikan pembayaran berhasil"* (menggantikan webhook payment gateway sandbox).
+*"Mode demo: simulasikan pembayaran berhasil"* (menggantikan webhook payment gateway sandbox — lihat
+`docs/DEMO_SCRIPT.md` untuk skrip lengkapnya).
 
 ---
 
@@ -99,6 +164,7 @@ resources/
 ├── views/app.blade.php           Root Inertia
 └── js/
     ├── app.jsx                   Entry Inertia (resolver halaman + toast)
+    ├── echo.js                   Bootstrap Laravel Echo (Reverb) — lihat §Real-time di atas
     ├── Components/
     │   ├── UI/                   Komponen dasar: Button, Input (+Select, Textarea), Modal, Badge,
     │   │                         Card, Table, Toggle, StatCard, MenuThumb, QuantityStepper, TrendChart
@@ -110,12 +176,12 @@ resources/
     │   ├── Customer/             Menu/Index, Cart/Index, Checkout/Index, Payment/Index, Order/Status
     │   ├── Cashier/              Dashboard, Orders, Tables, History  (+ Partials/)
     │   ├── Kitchen/              Dashboard  (+ Partials/)
-    │   ├── Admin/                Dashboard, Menus, MenuAnalytics, Tables, Reports, Targets, Settings  (+ Partials/)
-    │   └── Landing/              Index  (+ Partials/: Hero, Fitur, Tentang, Menu, Langkah, Footer)
-    ├── Hooks/                    useCart, useCurrency, useCountdown, useReveal, useNow, useSeenOnScreen
+    │   └── Admin/                Dashboard, Menus, MenuAnalytics, Tables, Reports, Targets, Settings  (+ Partials/)
+    ├── Hooks/                    useCart, useCurrency, useCountdown, useLiveReload, useFlashToast, useReveal, useNow, useSeenOnScreen
     ├── Utils/                    formatCurrency, formatDate, status, classNames, navigation,
     │                             orderStorage, salesTarget, tables, menuAnalytics, menuInteractions
-    └── Data/mock/                DATA CONTOH: menus, orders, tables, restaurant, staff, reports, menuAnalytics
+    └── Data/mock/                Data contoh — hanya dipakai sebagai nilai default props kalau backend
+                                  belum mengirim props (lihat aturan di bawah)
 ```
 
 Aturan main supaya rapi:
@@ -125,30 +191,16 @@ Aturan main supaya rapi:
 - Komponen yang dipakai **lebih dari satu halaman** masuk `Components/UI` (tanpa logika bisnis)
   atau `Components/Shared` (berisi logika/tata letak MICRODINE).
 - Format rupiah & tanggal **selalu** lewat `Utils/formatCurrency` dan `Utils/formatDate`.
-- Halaman tidak mengimpor data contoh secara langsung kecuali sebagai **nilai default props**,
-  supaya saat backend siap tinggal kirim props dari controller.
+- Halaman tidak mengimpor data contoh secara langsung kecuali sebagai **nilai default props**.
 
 **Panduan warna** (sesuai mockup proposal): latar `bg-canvas`, kartu `bg-panel`, aksi utama `bg-gold`,
 aksi kedua `bg-navy`. Status selalu memakai **label teks**, bukan warna saja.
 
 ---
 
-## Catatan untuk tim backend
+## Dokumen & referensi proyek
 
-- Routes ada di `routes/web.php` (sementara memakai closure / `Route::inertia`). Ganti dengan controller.
-- Setiap halaman sudah menerima **props** dengan nama yang tertulis di komentar bagian atas file-nya
-  (mis. `Pages/Cashier/Dashboard.jsx` → `orders`, `restaurant`, `stats`). Kirim props dengan bentuk yang sama
-  seperti di `Data/mock/`, dan halaman otomatis berhenti memakai data contoh.
-- Item pesanan wajib menyimpan **snapshot `price` & `hpp`** saat transaksi dibuat.
-- Omzet & laba di dasbor/laporan dihitung **hanya dari transaksi lunas** dan **sebelum pajak**.
-- `auth.user` dibagikan lewat `app/Http/Middleware/HandleInertiaRequests.php`.
-- Real-time: antrean kasir, layar dapur, dan status pelanggan menunggu event dari Laravel Reverb.
-- QRIS memakai payment gateway **mode sandbox**; status lunas hanya dari webhook yang valid.
-- **Meja** (`tables`: `number` unik 2 digit, `seats`, `area`, `is_active`, `qr_token`): meja **tidak pernah dihapus**,
-  cukup dinonaktifkan agar histori aman. Meja yang sedang terisi tidak boleh dinonaktifkan. URL QR memakai token
-  acak `/meja/07?k=...`; meja nonaktif atau token salah ditolak. Lihat komentar di `Pages/Admin/Tables.jsx`.
-- **Analisis Menu**: terlaris/omzet/laba dihitung dari `order_items` × `orders` yang **lunas** (snapshot harga & HPP).
-  "Paling diminati" butuh tabel `menu_interactions` (`menu_id`, `type`: `lihat`/`keranjang`, `table_session_id`,
-  `created_at`) yang diisi lewat `POST /meja/{table}/interaksi` (aktifkan `SEND_TO_SERVER` di
-  `Utils/menuInteractions.js`). Tambahkan index `orders(paid_at)` dan `order_items(menu_id)`.
-- Halaman menu pelanggan menerima props `popularity` `{ menuId: porsi 7 hari }` untuk label **Terlaris**.
+- `AGENTS.md` — aturan arsitektur & bisnis non-negosiasi, konvensi kode, workflow Git.
+- `PRD.md` / `ARCHITECTURE.md` / `DESIGN.md` / `PLAN.md` / `API_CONTRACT.md` — spesifikasi lengkap per modul.
+- `docs/DEMO_SCRIPT.md` — skrip demo 5 menit untuk dewan juri.
+- `deploy/` — template konfigurasi Nginx & Supervisor untuk produksi.

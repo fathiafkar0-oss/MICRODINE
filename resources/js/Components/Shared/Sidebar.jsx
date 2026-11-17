@@ -80,10 +80,16 @@ export default function Sidebar({ portal, sections, activeHref, user, showKitche
     );
 }
 
-/** Fase frontend: keluar = kembali ke halaman login. Backend: ganti dengan POST /staf/keluar. */
 export function LogoutLink({ className = '' }) {
     return (
-        <Link href="/staf/masuk" aria-label="Keluar" title="Keluar" className={cx('grid h-9 w-9 shrink-0 place-items-center rounded-[10px] transition', className)}>
+        <Link
+            href="/logout"
+            method="post"
+            as="button"
+            aria-label="Keluar"
+            title="Keluar"
+            className={cx('grid h-9 w-9 shrink-0 place-items-center rounded-[10px] transition', className)}
+        >
             <LogOut className="h-4 w-4" />
         </Link>
     );

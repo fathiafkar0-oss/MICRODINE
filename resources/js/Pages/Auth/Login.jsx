@@ -29,6 +29,11 @@ export default function Login() {
 
     const submit = (event) => {
         event.preventDefault();
+        if (!data.username.trim() || !data.password) {
+            toast.error('Username dan password wajib diisi');
+            return;
+        }
+
         post('/staf/masuk', {
             onSuccess: () => toast.success(`Selamat bertugas, masuk sebagai ${active.label}`),
             onError: (formErrors) => {

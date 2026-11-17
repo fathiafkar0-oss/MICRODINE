@@ -44,6 +44,7 @@ class HandleInertiaRequests extends Middleware
                     'name' => $user->name,
                     'username' => $user->username,
                     'role' => $user->role->value,
+                    'shift' => $user->role->value === 'admin' ? 'Pemilik' : 'Shift Pagi',
                 ],
             ],
             'flash' => [

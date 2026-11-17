@@ -1,5 +1,5 @@
-import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft } from 'lucide-react';
+import { Head, Link, usePage } from '@inertiajs/react';
+import { ArrowLeft, LogOut } from 'lucide-react';
 
 import LiveBadge from '@/Components/Shared/LiveBadge';
 import { formatLongDate } from '@/Utils/formatDate';
@@ -9,6 +9,9 @@ import { formatLongDate } from '@/Utils/formatDate';
  * header navy berisi judul + `summary` (kartu ringkasan), teks besar agar terbaca dari jauh.
  */
 export default function KitchenLayout({ title = 'Antrean Dapur', summary, children }) {
+    const { auth } = usePage().props;
+    const user = auth?.user;
+
     return (
         <div className="min-h-dvh bg-canvas">
             <Head title="Layar Dapur" />
@@ -16,14 +19,28 @@ export default function KitchenLayout({ title = 'Antrean Dapur', summary, childr
                 <div className="mx-auto max-w-[1500px]">
                     <div className="flex flex-wrap items-start justify-between gap-4">
                         <div>
-                            <Link href="/kasir" className="group mb-3 inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/60 transition-colors hover:text-gold-soft">
-                                <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" aria-hidden="true" />
-                                Kembali ke kasir
-                            </Link>
+                            {user?.role !== 'dapur' ? (
+                                <Link href="/kasir" className="group mb-3 inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/60 transition-colors hover:text-gold-soft">
+                                    <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" aria-hidden="true" />
+                                    Kembali ke kasir
+                                </Link>
+                            ) : null}
                             <h1 className="animate-page-in font-display text-[2.6rem] font-semibold leading-none">{title}</h1>
-                            <p className="mt-2 text-sm text-white/70">{formatLongDate()} · Shift pagi</p>
+                            <p className="mt-2 text-sm text-white/70">{formatLongDate()} · {user?.name ?? 'Staf Dapur'}</p>
                         </div>
-                        <LiveBadge />
+                        <div className="flex items-center gap-3">
+                            <LiveBadge />
+                            <Link
+                                href="/logout"
+                                method="post"
+                                as="button"
+                                aria-label="Keluar"
+                                title="Keluar"
+                                className="grid h-8 w-8 place-items-center rounded-lg border border-white/20 bg-white/5 text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+                            >
+                                <LogOut className="h-4 w-4" />
+                            </Link>
+                        </div>
                     </div>
                     {summary && <div className="mt-6">{summary}</div>}
                 </div>

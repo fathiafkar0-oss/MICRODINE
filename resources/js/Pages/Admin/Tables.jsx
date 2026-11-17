@@ -1,5 +1,6 @@
+import { router } from '@inertiajs/react';
 import { Plus, Printer, RefreshCcw } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 
 import FilterChips from '@/Components/Shared/FilterChips';
@@ -14,7 +15,7 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import AdminTableCard from '@/Pages/Admin/Partials/AdminTableCard';
 import QrPrintSheet from '@/Pages/Admin/Partials/QrPrintSheet';
 import TableFormModal from '@/Pages/Admin/Partials/TableFormModal';
-import { listAreas, makeQrToken, nextTableNumber, withSessions } from '@/Utils/tables';
+import { listAreas, nextTableNumber, withSessions } from '@/Utils/tables';
 
 const FILTERS = [
     { value: 'semua', label: 'Semua' },
@@ -40,6 +41,22 @@ export default function AdminTables({
     const [form, setForm] = useState(null);
     const [qrTable, setQrTable] = useState(null);
     const [toggling, setToggling] = useState(null);
+    // Nomor meja yang kartu QR-nya mau dibuka begitu data terbaru tiba dari server.
+    const [pendingQr, setPendingQr] = useState(null);
+
+    // Setelah simpan/toggle/buat-ulang QR, Inertia mengirim props terbaru.
+    useEffect(() => {
+        if (tableProp) setTables(tableProp);
+    }, [tableProp]);
+
+    useEffect(() => {
+        if (!pendingQr || !tableProp) return;
+        const fresh = tableProp.find((table) => table.number === pendingQr);
+        if (fresh) {
+            setQrTable(fresh);
+            setPendingQr(null);
+        }
+    }, [tableProp, pendingQr]);
 
     const areas = useMemo(() => listAreas(tables, areaProp), [tables, areaProp]);
     const sorted = useMemo(() => [...tables].sort((a, b) => a.number.localeCompare(b.number)), [tables]);
@@ -57,31 +74,68 @@ export default function AdminTables({
     };
 
     const save = (data) => {
+        const number = String(data.number).padStart(2, '0');
+        const onError = (errors) => toast.error(Object.values(errors)[0] ?? 'Meja gagal disimpan');
+
         if (data.id) {
-            setTables((prev) => prev.map((table) => (table.id === data.id ? { ...table, seats: data.seats, area: data.area } : table)));
-            toast.success(`Meja ${data.number} diperbarui`);
+            router.put(
+                `/admin/meja/${data.id}`,
+                { seats: Number(data.seats), area: data.area },
+                {
+                    preserveScroll: true,
+                    onError,
+                    onSuccess: () => {
+                        toast.success(`Meja ${number} diperbarui`);
+                        setForm(null);
+                    },
+                },
+            );
         } else {
-            const id = Math.max(0, ...tables.map((table) => table.id)) + 1;
-            const created = { ...data, id, isActive: true, qrToken: makeQrToken(), status: 'tersedia', session: null };
-            setTables((prev) => [...prev, created]);
-            toast.success(`Meja ${data.number} ditambahkan · QR siap dicetak`);
-            setQrTable(created);
+            router.post(
+                '/admin/meja',
+                { number, seats: Number(data.seats), area: data.area },
+                {
+                    preserveScroll: true,
+                    onError,
+                    onSuccess: () => {
+                        toast.success(`Meja ${number} ditambahkan · QR siap dicetak`);
+                        // Token QR dibuat server; kartunya dibuka setelah data baru tiba.
+                        setPendingQr(number);
+                        setForm(null);
+                    },
+                },
+            );
         }
-        setForm(null);
     };
 
     const toggle = () => {
-        const next = !toggling.isActive;
-        setTables((prev) => prev.map((table) => (table.id === toggling.id ? { ...table, isActive: next, status: 'tersedia', session: null } : table)));
-        toast.success(next ? `Meja ${toggling.number} aktif kembali` : `Meja ${toggling.number} dinonaktifkan`);
-        setToggling(null);
+        const target = toggling;
+        router.patch(
+            `/admin/meja/${target.id}/status`,
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => toast.success(target.isActive ? `Meja ${target.number} dinonaktifkan` : `Meja ${target.number} aktif kembali`),
+                onError: () => toast.error('Status meja gagal diubah'),
+                onFinish: () => setToggling(null),
+            },
+        );
     };
 
     const regenerateQr = (table) => {
-        const qrToken = makeQrToken();
-        setTables((prev) => prev.map((item) => (item.id === table.id ? { ...item, qrToken } : item)));
-        setQrTable({ ...table, qrToken });
-        toast.success(`QR Meja ${table.number} dibuat ulang. Cetak dan ganti QR lama di meja.`);
+        router.post(
+            `/admin/meja/${table.id}/qr-ulang`,
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    // Tampilkan token sungguhan dari database, bukan buatan browser.
+                    setPendingQr(table.number);
+                    toast.success(`QR Meja ${table.number} dibuat ulang. Cetak dan ganti QR lama di meja.`);
+                },
+                onError: () => toast.error('QR gagal dibuat ulang'),
+            },
+        );
     };
 
     return (

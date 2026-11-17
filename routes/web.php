@@ -32,7 +32,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::inertia('/', 'Landing/Index')->name('home');
+// Tidak ada halaman landing (sesuai keputusan tim — tidak ada di proposal).
+// Staf/admin/dapur diarahkan langsung ke portal staf; middleware `guest` pada
+// rute ini otomatis melempar staf yang sudah login ke dashboard perannya.
+Route::redirect('/', '/staf/masuk');
 
 // ---------------------------------------------------------------- Pelanggan
 // URL yang dicetak di QR meja: /meja/{nomor}, mis. /meja/07

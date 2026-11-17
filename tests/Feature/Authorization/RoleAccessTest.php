@@ -89,7 +89,6 @@ class RoleAccessTest extends TestCase
         $session = TableSession::factory()->for($table, 'diningTable')->create();
         Order::factory()->for($session, 'tableSession')->create(['daily_queue_number' => 'A-024']);
 
-        $this->get('/')->assertOk();
         $this->get('/meja/07')->assertOk();
         $this->get('/meja/07/keranjang')->assertOk();
         $this->get('/meja/07/checkout')->assertOk();

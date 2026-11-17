@@ -3,21 +3,19 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StoreStaffRequest;
 use App\Http\Requests\Admin\UpdateSettingsRequest;
 use App\Models\RestaurantSetting;
 use App\Models\User;
 use App\Support\RestaurantPresenter;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 use Inertia\Response;
 
 /**
- * Modul J — Pengaturan Restoran.
- * Route: GET/PUT /admin/pengaturan
- *
- * `Admin/Settings.jsx` tombol "Simpan Perubahan" memanggil endpoint ini via
- * `router.put()`. Tombol "Tambah Akun" masih placeholder (pembuatan akun
- * staf baru belum ada di scope modul yang disetujui — lihat PLAN.md).
+ * Modul J — Pengaturan Restoran & Manajemen Akun Staf.
+ * Route: GET/PUT /admin/pengaturan, POST /admin/pengaturan/staf, DELETE /admin/pengaturan/staf/{user}
  */
 class SettingsController extends Controller
 {
@@ -28,9 +26,8 @@ class SettingsController extends Controller
         $staff = User::query()->orderBy('name')->get()->map(fn (User $user) => [
             'id' => $user->id,
             'name' => $user->name,
+            'username' => $user->username,
             'role' => $user->role->value,
-            // Skema 11-tabel final tidak memiliki kolom "shift" pada users;
-            // dikembalikan null agar halaman tetap merender tanpa error.
             'shift' => null,
         ])->all();
 
@@ -58,5 +55,32 @@ class SettingsController extends Controller
         ]);
 
         return back()->with('status', 'Pengaturan restoran disimpan.');
+    }
+
+    public function storeStaff(StoreStaffRequest $request): RedirectResponse
+    {
+        $data = $request->validated();
+
+        User::query()->create([
+            'name' => $data['name'],
+            'username' => strtolower($data['username']),
+            'role' => $data['role'],
+            'password' => Hash::make($data['password']),
+            'is_active' => true,
+        ]);
+
+        return back()->with('status', "Akun staf {$data['name']} (@{$data['username']}) berhasil ditambahkan.");
+    }
+
+    public function destroyStaff(User $user): RedirectResponse
+    {
+        if ($user->id === auth()->id()) {
+            return back()->withErrors(['staff' => 'Tidak bisa menghapus akun yang sedang Anda gunakan saat ini.']);
+        }
+
+        $name = $user->name;
+        $user->delete();
+
+        return back()->with('status', "Akun staf {$name} berhasil dihapus.");
     }
 }

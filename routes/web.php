@@ -111,4 +111,6 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::put('/target', [TargetsController::class, 'update'])->name('targets.update');
     Route::get('/pengaturan', [SettingsController::class, 'index'])->name('settings');
     Route::put('/pengaturan', [SettingsController::class, 'update'])->name('settings.update');
+    Route::post('/pengaturan/staf', [SettingsController::class, 'storeStaff'])->name('settings.staff.store');
+    Route::delete('/pengaturan/staf/{user}', [SettingsController::class, 'destroyStaff'])->name('settings.staff.destroy');
 });

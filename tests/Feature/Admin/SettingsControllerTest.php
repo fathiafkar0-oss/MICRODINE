@@ -66,4 +66,65 @@ class SettingsControllerTest extends TestCase
             'payment_deadline_minutes' => 15,
         ])->assertInvalid(['tax_rate_percent']);
     }
+
+    public function test_admin_can_create_new_staff_account(): void
+    {
+        $admin = $this->admin();
+
+        $response = $this->actingAs($admin)->post('/admin/pengaturan/staf', [
+            'name' => 'Budi Kasir Baru',
+            'username' => 'budi_kasir',
+            'role' => 'kasir',
+            'password' => 'secret123',
+        ]);
+
+        $response->assertRedirect();
+        $this->assertDatabaseHas('users', [
+            'name' => 'Budi Kasir Baru',
+            'username' => 'budi_kasir',
+            'role' => 'kasir',
+            'is_active' => true,
+        ]);
+    }
+
+    public function test_duplicate_username_is_rejected(): void
+    {
+        $admin = $this->admin();
+
+        $response = $this->actingAs($admin)->post('/admin/pengaturan/staf', [
+            'name' => 'Admin Palsu',
+            'username' => 'admin', // already taken
+            'role' => 'admin',
+            'password' => 'secret123',
+        ]);
+
+        $response->assertInvalid(['username']);
+    }
+
+    public function test_admin_can_delete_another_staff_account(): void
+    {
+        $admin = $this->admin();
+        $staff = User::create([
+            'name' => 'Staff To Delete',
+            'username' => 'to_delete',
+            'password' => 'secret',
+            'role' => UserRole::Kasir,
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($admin)->delete("/admin/pengaturan/staf/{$staff->id}");
+
+        $response->assertRedirect();
+        $this->assertDatabaseMissing('users', ['id' => $staff->id]);
+    }
+
+    public function test_admin_cannot_delete_own_account(): void
+    {
+        $admin = $this->admin();
+
+        $response = $this->actingAs($admin)->delete("/admin/pengaturan/staf/{$admin->id}");
+
+        $response->assertSessionHasErrors('staff');
+        $this->assertDatabaseHas('users', ['id' => $admin->id]);
+    }
 }

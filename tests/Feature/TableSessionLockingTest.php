@@ -31,8 +31,8 @@ class TableSessionLockingTest extends TestCase
     {
         parent::setUp();
 
-        if (DB::connection()->getDriverName() !== 'pgsql') {
-            $this->markTestSkipped('TableSessionLockingTest hanya relevan di atas PostgreSQL (partial unique index).');
+        if (! in_array(DB::connection()->getDriverName(), ['pgsql', 'sqlite'], true)) {
+            $this->markTestSkipped('TableSessionLockingTest hanya relevan di atas PostgreSQL / SQLite (partial unique index).');
         }
     }
 

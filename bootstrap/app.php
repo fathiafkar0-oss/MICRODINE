@@ -16,6 +16,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Railway memutus TLS di tepi jaringannya lalu meneruskan request ke
+        // container sebagai HTTP biasa. Tanpa mempercayai header X-Forwarded-*,
+        // Laravel membangun URL aset dengan skema http:// sehingga diblokir
+        // browser sebagai mixed content pada halaman https://.
+        $middleware->trustProxies(at: '*');
+
         $middleware->web(append: [
             HandleInertiaRequests::class,
         ]);

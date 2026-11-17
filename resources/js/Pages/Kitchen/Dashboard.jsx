@@ -1,6 +1,7 @@
 import { router } from '@inertiajs/react';
 import { CircleCheck, Flame } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 
 import StatCard from '@/Components/UI/StatCard';
 import { orders as mockOrders } from '@/Data/mock/orders';
@@ -14,8 +15,13 @@ import KitchenTicket from '@/Pages/Kitchen/Partials/KitchenTicket';
  * Real-time: `useLiveReload` dengarkan channel privat "kitchen.kds" (lihat
  * routes/channels.php & app/Events/OrderPaidEvent + KitchenStatusUpdatedEvent)
  * lalu muat ulang props `orders`/`doneToday` otomatis — tanpa refresh manual.
- * Backend: PATCH /dapur/pesanan/{id}/status { status: 'done' }
+ * Backend: PATCH /dapur/pesanan/{id}/status { status: 'cooking' | 'done' }
+ * Backend hanya menerima transisi satu langkah (queued -> cooking -> done),
+ * jadi status yang dikirim ditentukan dari `kitchenStatus` tiket itu sendiri.
  */
+/** Tahap berikutnya yang diterima backend untuk tiap status dapur. */
+const NEXT_STATUS = { queued: 'cooking', cooking: 'done' };
+
 export default function KitchenDashboard({ orders: initial = mockOrders.filter((order) => order.status === 'diproses'), doneToday = 27 }) {
     const [orders, setOrders] = useState(initial);
     const [busyCode, setBusyCode] = useState(null);
@@ -29,9 +35,20 @@ export default function KitchenDashboard({ orders: initial = mockOrders.filter((
 
     const sorted = [...orders].sort((a, b) => b.minutesAgo - a.minutesAgo);
 
-    const markDone = (order) => {
+    const advance = (order) => {
+        const next = NEXT_STATUS[order.kitchenStatus];
+        if (!next) return;
+
         setBusyCode(order.code);
-        router.patch(`/dapur/pesanan/${order.id}/status`, { status: 'done' }, { preserveScroll: true, onFinish: () => setBusyCode(null) });
+        router.patch(
+            `/dapur/pesanan/${order.id}/status`,
+            { status: next },
+            {
+                preserveScroll: true,
+                onError: (errors) => toast.error(Object.values(errors)[0] ?? 'Status pesanan gagal diubah'),
+                onFinish: () => setBusyCode(null),
+            },
+        );
     };
 
     const summary = (
@@ -60,7 +77,7 @@ export default function KitchenDashboard({ orders: initial = mockOrders.filter((
             ) : (
                 <div className="stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
                     {sorted.map((order) => (
-                        <KitchenTicket key={order.code} order={order} onDone={markDone} busy={busyCode === order.code} />
+                        <KitchenTicket key={order.code} order={order} onAdvance={advance} busy={busyCode === order.code} />
                     ))}
                 </div>
             )}

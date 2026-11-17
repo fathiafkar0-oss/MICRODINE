@@ -52,4 +52,24 @@ class CheckoutControllerTest extends TestCase
             ],
         ])->assertInvalid(['items.0.menu_id']);
     }
+
+    public function test_cash_payment_view_can_be_accessed_without_null_offset_error(): void
+    {
+        DiningTable::factory()->create(['number' => '07', 'is_active' => true]);
+        $menu = MenuItem::factory()->create(['price' => 15000, 'hpp' => 6000]);
+
+        $response = $this->post('/meja/07/checkout', [
+            'customer_name' => 'Budi',
+            'payment_method' => 'tunai',
+            'items' => [
+                ['menu_id' => $menu->id, 'quantity' => 1],
+            ],
+        ]);
+
+        $response->assertRedirect();
+        $order = Order::query()->latest('id')->firstOrFail();
+
+        $bayarResponse = $this->get("/pesanan/{$order->daily_queue_number}/bayar");
+        $bayarResponse->assertOk();
+    }
 }

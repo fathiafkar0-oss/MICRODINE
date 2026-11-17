@@ -31,13 +31,16 @@ class OrderStatusController extends Controller
 
         $restaurant = RestaurantSetting::current();
         $qris = $order->payment_method->value === 'qris' ? $this->gateway->generateQris($order) : null;
+        $qrisExpiresAt = isset($qris['expires_at']) && $qris['expires_at'] !== null
+            ? $qris['expires_at']->toIso8601String()
+            : now()->addMinutes($restaurant->qris_expires_minutes)->toIso8601String();
 
         return Inertia::render('Customer/Payment/Index', [
             'code' => $code,
             'order' => [
                 ...OrderPresenter::toArray($order),
                 'qrisString' => $qris['qr_string'] ?? null,
-                'qrisExpiresAt' => $qris['expires_at']?->toIso8601String() ?? now()->addMinutes($restaurant->qris_expires_minutes)->toIso8601String(),
+                'qrisExpiresAt' => $qrisExpiresAt,
                 // Hooks/useCountdown.js melakukan aritmetika numerik langsung pada
                 // nilai ini (`order.createdAt + menit*60000`), jadi HARUS berupa
                 // timestamp milidetik (number), bukan string ISO-8601.

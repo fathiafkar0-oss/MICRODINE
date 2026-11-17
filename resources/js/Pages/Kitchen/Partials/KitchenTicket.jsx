@@ -1,4 +1,4 @@
-import { ChefHat, CircleCheck, Clock } from 'lucide-react';
+import { ChefHat, Clock } from 'lucide-react';
 
 import Badge, { TableChip } from '@/Components/UI/Badge';
 import { cx } from '@/Utils/classNames';
@@ -8,16 +8,9 @@ import { isAddition } from '@/Utils/status';
 /** Batas menit sebelum tiket ditandai "lama" (garis merah). */
 export const LATE_AFTER_MINUTES = 15;
 
-/** Tombol mengikuti tahap tiket: queued -> mulai masak, cooking -> selesai. */
-const ACTION = {
-    queued: { label: 'Mulai Masak', busyLabel: 'Memulai…', Icon: ChefHat, badge: 'Menunggu', tone: 'warn' },
-    cooking: { label: 'Tandai Selesai', busyLabel: 'Memproses…', Icon: CircleCheck, badge: 'Dimasak', tone: 'info' },
-};
-
-/** Tiket pesanan di layar dapur: huruf besar, catatan menonjol, tombol selesai lebar. */
-export default function KitchenTicket({ order, onAdvance, busy = false }) {
+/** Tiket pesanan di layar dapur: huruf besar, catatan menonjol, antrean masak bersih. */
+export default function KitchenTicket({ order }) {
     const late = order.minutesAgo >= LATE_AFTER_MINUTES;
-    const action = ACTION[order.kitchenStatus] ?? ACTION.cooking;
 
     return (
         <article className={cx('lift flex flex-col rounded-[24px] border-2 bg-panel p-5 shadow-[var(--shadow-soft)]', late ? 'border-crimson/70' : 'border-transparent')}>
@@ -25,8 +18,8 @@ export default function KitchenTicket({ order, onAdvance, busy = false }) {
                 <div className="flex items-center gap-2">
                     <span className="text-2xl font-extrabold text-navy">{order.code}</span>
                     <TableChip number={order.table} className="text-sm" />
-                    <Badge tone={action.tone} className="text-xs">
-                        {action.badge}
+                    <Badge tone="warn" className="text-xs">
+                        Perlu Dimasak
                     </Badge>
                 </div>
                 <span className={cx('inline-flex items-center gap-1 text-sm font-semibold', late ? 'text-crimson' : 'text-faint')}>
@@ -55,15 +48,10 @@ export default function KitchenTicket({ order, onAdvance, busy = false }) {
                 ))}
             </ul>
 
-            <button
-                type="button"
-                onClick={() => onAdvance(order)}
-                disabled={busy}
-                className="mt-4 inline-flex h-14 items-center justify-center gap-2 rounded-[16px] bg-gold text-base font-extrabold text-obsidian shadow-[0_10px_22px_-12px_rgba(204,158,74,0.9)] transition hover:bg-gold-hover active:scale-[0.97] disabled:opacity-50"
-            >
-                <action.Icon className="h-5 w-5" aria-hidden="true" />
-                {busy ? action.busyLabel : action.label}
-            </button>
+            <div className="mt-4 flex items-center justify-center gap-2 rounded-[16px] border border-gold/40 bg-gold-tint/50 py-3 text-center text-xs font-bold text-navy shadow-sm">
+                <ChefHat className="h-4 w-4 text-warn" aria-hidden="true" />
+                <span>Antrean Masak · Konfirmasi selesai oleh kasir</span>
+            </div>
         </article>
     );
 }

@@ -70,6 +70,7 @@ Route::middleware(['auth', 'role:kasir,admin'])->prefix('kasir')->name('cashier.
     Route::get('/pesanan', [CashierOrderController::class, 'index'])->name('orders');
     Route::post('/pesanan/manual', [CashierOrderController::class, 'storeManualOrder'])->name('orders.manual');
     Route::post('/pesanan/{order}/pay-cash', [CashierOrderController::class, 'payCash'])->name('orders.pay-cash');
+    Route::post('/pesanan/{order}/done', [CashierOrderController::class, 'markDone'])->name('orders.done');
     Route::post('/pesanan/{order}/serve', [CashierOrderController::class, 'markServed'])->name('orders.serve');
     Route::post('/pesanan/{order}/cancel', [CashierOrderController::class, 'cancel'])->name('orders.cancel');
 

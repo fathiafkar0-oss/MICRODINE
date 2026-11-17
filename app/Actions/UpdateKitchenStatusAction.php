@@ -31,7 +31,14 @@ class UpdateKitchenStatusAction
 
             $from = $locked->kitchen_status;
 
-            if ($from->next() !== $to && ! ($from === KitchenStatus::Done && $to === KitchenStatus::Served)) {
+            $allowed = match ($from) {
+                KitchenStatus::Queued => in_array($to, [KitchenStatus::Cooking, KitchenStatus::Done], true),
+                KitchenStatus::Cooking => $to === KitchenStatus::Done,
+                KitchenStatus::Done => $to === KitchenStatus::Served,
+                KitchenStatus::Served => false,
+            };
+
+            if (! $allowed) {
                 throw ValidationException::withMessages([
                     'status' => "Tidak dapat mengubah status dari {$from->value} ke {$to->value}.",
                 ]);

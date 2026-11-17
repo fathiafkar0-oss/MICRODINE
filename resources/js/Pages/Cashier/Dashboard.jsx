@@ -68,7 +68,16 @@ export default function CashierDashboard({ orders: initialOrders = mockOrders, r
 
     const markDone = (order) => {
         setBusyCode(order.code);
-        router.patch(`/dapur/pesanan/${order.id}/status`, { status: 'done' }, { preserveScroll: true, onFinish: () => setBusyCode(null) });
+        router.post(
+            `/kasir/pesanan/${order.id}/done`,
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => toast.success(`Pesanan ${order.code} selesai dimasak`),
+                onError: (errors) => toast.error(Object.values(errors)[0] ?? 'Gagal mengubah status'),
+                onFinish: () => setBusyCode(null),
+            },
+        );
     };
 
     const deliver = (order) => {

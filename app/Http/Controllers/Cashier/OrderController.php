@@ -83,6 +83,13 @@ class OrderController extends Controller
         return back()->with('status', "Pesanan {$result['order']->daily_queue_number} lunas. Kembalian: Rp{$change}.");
     }
 
+    public function markDone(Order $order): RedirectResponse
+    {
+        $this->updateKitchenStatus->execute($order, KitchenStatus::Done, 'kasir', auth()->id());
+
+        return back()->with('status', "Pesanan {$order->daily_queue_number} selesai dimasak.");
+    }
+
     public function markServed(Order $order): RedirectResponse
     {
         $this->updateKitchenStatus->execute($order, KitchenStatus::Served, 'kasir', auth()->id());

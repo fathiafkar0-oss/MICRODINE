@@ -39,11 +39,19 @@ class DashboardController extends Controller
 
     public function updateStatus(UpdateKitchenStatusRequest $request, Order $order): RedirectResponse
     {
+        $toStatus = KitchenStatus::from($request->validated('status'));
+        $user = $request->user();
+
+        // Pesanan selesai hanya dapat dikonfirmasi oleh kasir (atau admin)
+        if ($toStatus === KitchenStatus::Done && ! in_array($user->role->value, ['kasir', 'admin'], true)) {
+            abort(403, 'Konfirmasi pesanan selesai hanya dapat dilakukan oleh kasir.');
+        }
+
         $this->updateKitchenStatus->execute(
             $order,
-            KitchenStatus::from($request->validated('status')),
-            'dapur',
-            $request->user()->id,
+            $toStatus,
+            $user->role->value,
+            $user->id,
         );
 
         return back();

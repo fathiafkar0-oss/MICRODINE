@@ -1,5 +1,6 @@
+import { router } from '@inertiajs/react';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 
 import PageHeader from '@/Components/Shared/PageHeader';
@@ -28,6 +29,9 @@ export default function AdminMenus({ menus: initial = mockMenus, categories = mo
     const [form, setForm] = useState(null);
     const [deleting, setDeleting] = useState(null);
 
+    // Setelah simpan/hapus, Inertia mengirim props terbaru dari server.
+    useEffect(() => setMenus(initial), [initial]);
+
     const visible = useMemo(() => {
         const keyword = query.trim().toLowerCase();
         return menus.filter((menu) => (category === 'Semua' || menu.category === category) && (!keyword || menu.name.toLowerCase().includes(keyword)));
@@ -35,22 +39,58 @@ export default function AdminMenus({ menus: initial = mockMenus, categories = mo
 
     const update = (id, changes) => setMenus((prev) => prev.map((menu) => (menu.id === id ? { ...menu, ...changes } : menu)));
 
+    // Props mengirim ID tampilan ("M-010"); route backend memakai ID asli (10).
+    const realId = (displayId) => String(displayId).replace(/^M-0*/, '');
+
     const save = (data) => {
+        const payload = {
+            category: data.category,
+            name: data.name,
+            description: data.description ?? '',
+            price: Number(data.price) || 0,
+            hpp: Number(data.hpp) || 0,
+            available: data.available ? 1 : 0,
+            image: data.image instanceof File ? data.image : null,
+        };
+
+        const options = {
+            forceFormData: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                toast.success(data.id ? `${data.name} diperbarui` : `${data.name} ditambahkan`);
+                setForm(null);
+            },
+            onError: (errors) => toast.error(Object.values(errors)[0] ?? 'Menu gagal disimpan'),
+        };
+
         if (data.id) {
-            update(data.id, data);
-            toast.success(`${data.name} diperbarui`);
+            // PHP tidak membaca body multipart pada PUT, jadi kirim sebagai POST
+            // dengan _method agar Laravel tetap mengarahkannya ke route PUT.
+            router.post(`/admin/menu/${realId(data.id)}`, { ...payload, _method: 'put' }, options);
         } else {
-            const next = Math.max(...menus.map((menu) => Number(menu.id.slice(2)))) + 1;
-            setMenus((prev) => [...prev, { ...data, id: `M-${String(next).padStart(3, '0')}` }]);
-            toast.success(`${data.name} ditambahkan`);
+            router.post('/admin/menu', payload, options);
         }
-        setForm(null);
     };
 
     const remove = () => {
-        setMenus((prev) => prev.filter((menu) => menu.id !== deleting.id));
-        toast.success(`${deleting.name} dihapus`);
-        setDeleting(null);
+        const target = deleting;
+        router.delete(`/admin/menu/${realId(target.id)}`, {
+            preserveScroll: true,
+            onSuccess: () => toast.success(`${target.name} dihapus`),
+            onError: () => toast.error('Menu gagal dihapus'),
+            onFinish: () => setDeleting(null),
+        });
+    };
+
+    const toggleAvailability = (menu, value) => {
+        update(menu.id, { available: value });
+        router.patch(`/admin/menu/${realId(menu.id)}/toggle-availability`, {}, {
+            preserveScroll: true,
+            onError: () => {
+                update(menu.id, { available: !value });
+                toast.error('Ketersediaan gagal diubah');
+            },
+        });
     };
 
     return (
@@ -99,7 +139,7 @@ export default function AdminMenus({ menus: initial = mockMenus, categories = mo
                                 <span className="ml-2 rounded-full bg-success-tint px-2 py-0.5 text-xs font-bold text-success">{formatPercent(margin / menu.price)}</span>
                             </TableCell>
                             <TableCell>
-                                <Toggle checked={menu.available} label={`Ketersediaan ${menu.name}`} onLabel="Tersedia" offLabel="Habis" onChange={(value) => update(menu.id, { available: value })} />
+                                <Toggle checked={menu.available} label={`Ketersediaan ${menu.name}`} onLabel="Tersedia" offLabel="Habis" onChange={(value) => toggleAvailability(menu, value)} />
                             </TableCell>
                             <TableCell>
                                 <div className="flex gap-1.5">

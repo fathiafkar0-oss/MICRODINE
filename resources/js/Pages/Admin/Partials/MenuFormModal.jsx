@@ -17,6 +17,9 @@ export const EMPTY_MENU = { id: null, name: '', category: 'Makanan', description
 export default function MenuFormModal({ initial, categories, onClose, onSave }) {
     const [data, setData] = useState(initial);
     const [preview, setPreview] = useState(initial.image);
+    // Berkas asli yang diunggah. `preview` hanya URL sementara untuk ditampilkan;
+    // yang harus dikirim ke server adalah objek File-nya, bukan URL blob itu.
+    const [photo, setPhoto] = useState(null);
     const set = (key) => (value) => setData((prev) => ({ ...prev, [key]: value }));
     const hpp = Number(data.hpp) || 0;
     const price = Number(data.price) || 0;
@@ -30,6 +33,7 @@ export default function MenuFormModal({ initial, categories, onClose, onSave }) 
             toast.error('Ukuran foto maksimal 2 MB');
             return;
         }
+        setPhoto(file);
         setPreview(URL.createObjectURL(file));
     };
 
@@ -38,7 +42,7 @@ export default function MenuFormModal({ initial, categories, onClose, onSave }) 
             <form
                 onSubmit={(event) => {
                     event.preventDefault();
-                    if (valid) onSave({ ...data, hpp, price, image: preview });
+                    if (valid) onSave({ ...data, hpp, price, image: photo });
                 }}
             >
                 <div className="grid gap-4 sm:grid-cols-[150px_1fr]">

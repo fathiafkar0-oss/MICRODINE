@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import { ArrowRight, Eye, EyeOff, Lock, ShieldCheck, User } from 'lucide-react';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
@@ -11,28 +11,31 @@ import { STAFF_ROLES } from '@/Pages/Auth/Partials/staffRoles';
 
 /**
  * Portal masuk staf (satu pintu untuk semua peran, RBAC).
- * Route: GET /staf/masuk
- * Backend: ganti `submit` dengan useForm().post('/staf/masuk'); server menentukan
- * peran dari akun dan mengarahkan ke halaman yang sesuai.
+ * Route: GET /staf/masuk, POST /staf/masuk (AuthenticatedSessionController::store).
+ * Tab peran di bawah hanya bantuan visual (mengisi placeholder & gambar) — peran
+ * sesungguhnya ditentukan server dari akun, lalu server yang mengarahkan ke
+ * dashboard yang benar (lihat `UserRole::homeRoute()`), bukan tab yang dipilih.
  */
 export default function Login() {
     const [role, setRole] = useState('kasir');
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    const [remember, setRemember] = useState(true);
     const [showPassword, setShowPassword] = useState(false);
-    const [error, setError] = useState(false);
     const active = STAFF_ROLES.find((item) => item.id === role);
+    const { data, setData, post, processing, errors, reset } = useForm({
+        username: '',
+        password: '',
+        remember: true,
+    });
+    const error = Boolean(errors.username || errors.password);
 
     const submit = (event) => {
         event.preventDefault();
-        if (!username.trim() || !password) {
-            setError(true);
-            toast.error('Username dan password wajib diisi');
-            return;
-        }
-        toast.success(`Selamat bertugas, masuk sebagai ${active.label}`);
-        router.visit(active.home);
+        post('/staf/masuk', {
+            onSuccess: () => toast.success(`Selamat bertugas, masuk sebagai ${active.label}`),
+            onError: (formErrors) => {
+                toast.error(formErrors.username ?? formErrors.password ?? 'Username atau password salah');
+                reset('password');
+            },
+        });
     };
 
     return (
@@ -65,28 +68,22 @@ export default function Login() {
                     <LoginField
                         label="Username"
                         icon={User}
-                        value={username}
-                        onChange={(event) => {
-                            setUsername(event.target.value);
-                            setError(false);
-                        }}
+                        value={data.username}
+                        onChange={(event) => setData('username', event.target.value)}
                         autoComplete="username"
                         placeholder={`mis. ${active.sample}`}
-                        aria-invalid={error && !username.trim()}
+                        aria-invalid={Boolean(errors.username)}
                         className="mt-6"
                     />
                     <LoginField
                         label="Password"
                         icon={Lock}
                         type={showPassword ? 'text' : 'password'}
-                        value={password}
-                        onChange={(event) => {
-                            setPassword(event.target.value);
-                            setError(false);
-                        }}
+                        value={data.password}
+                        onChange={(event) => setData('password', event.target.value)}
                         autoComplete="current-password"
                         placeholder="••••••••"
-                        aria-invalid={error && !password}
+                        aria-invalid={Boolean(errors.password)}
                         className="mt-5"
                         trailing={
                             <button
@@ -102,22 +99,23 @@ export default function Login() {
 
                     {error && (
                         <p role="alert" className="mt-3 animate-fade-in text-sm text-crimson">
-                            Username dan password wajib diisi.
+                            {errors.username ?? errors.password}
                         </p>
                     )}
 
-                    <IosSwitch label="Ingat saya di perangkat ini" checked={remember} onChange={setRemember} className="mt-5 px-1" />
+                    <IosSwitch label="Ingat saya di perangkat ini" checked={data.remember} onChange={(value) => setData('remember', value)} className="mt-5 px-1" />
 
                     <button
                         type="submit"
-                        className="group relative mt-6 flex h-[54px] w-full items-center justify-center gap-2.5 overflow-hidden rounded-[14px] bg-navy text-[15px] font-semibold tracking-[0.01em] text-ivory shadow-[0_10px_24px_-10px_rgba(10,29,75,0.6)] transition-[background-color,transform] duration-200 hover:bg-obsidian active:scale-[0.98]"
+                        disabled={processing}
+                        className="group relative mt-6 flex h-[54px] w-full items-center justify-center gap-2.5 overflow-hidden rounded-[14px] bg-navy text-[15px] font-semibold tracking-[0.01em] text-ivory shadow-[0_10px_24px_-10px_rgba(10,29,75,0.6)] transition-[background-color,transform] duration-200 hover:bg-obsidian active:scale-[0.98] disabled:opacity-60"
                     >
                         {/* Kilau emas yang melintas saat tombol diarahkan kursor */}
                         <span
                             className="absolute inset-y-0 -left-1/3 w-1/3 -skew-x-12 bg-gradient-to-r from-transparent via-gold/25 to-transparent transition-transform duration-700 group-hover:translate-x-[400%]"
                             aria-hidden="true"
                         />
-                        <span className="relative">Masuk sebagai {active.label}</span>
+                        <span className="relative">{processing ? 'Memproses…' : `Masuk sebagai ${active.label}`}</span>
                         <ArrowRight className="relative h-4 w-4 text-gold transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true" />
                     </button>
 

@@ -70,7 +70,21 @@ class SyncController extends Controller
      */
     private function orderSnapshot(string $code): array
     {
-        $order = Order::query()->where('daily_queue_number', $code)->first(['id', 'daily_queue_number', 'payment_status', 'kitchen_status']);
+        $order = Order::query()
+            ->where(function ($q) use ($code) {
+                $q->where('daily_queue_number', $code)
+                    ->orWhere('order_code', $code);
+            })
+            ->whereDate('created_at', now()->toDateString())
+            ->latest('id')
+            ->first(['id', 'daily_queue_number', 'payment_status', 'kitchen_status'])
+            ?? Order::query()
+                ->where(function ($q) use ($code) {
+                    $q->where('daily_queue_number', $code)
+                        ->orWhere('order_code', $code);
+                })
+                ->latest('id')
+                ->first(['id', 'daily_queue_number', 'payment_status', 'kitchen_status']);
 
         if ($order === null) {
             return [];

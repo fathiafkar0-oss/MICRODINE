@@ -35,9 +35,20 @@ class MidtransWebhookController extends Controller
         $payload = $this->gateway->parseWebhookPayload($request);
 
         $order = Order::query()
-            ->where('daily_queue_number', $payload['order_code'])
-            ->orWhere('order_code', $payload['order_code'])
-            ->first();
+            ->where(function ($q) use ($payload) {
+                $q->where('daily_queue_number', $payload['order_code'])
+                    ->orWhere('order_code', $payload['order_code']);
+            })
+            ->whereDate('created_at', now()->toDateString())
+            ->latest('id')
+            ->first()
+            ?? Order::query()
+                ->where(function ($q) use ($payload) {
+                    $q->where('daily_queue_number', $payload['order_code'])
+                        ->orWhere('order_code', $payload['order_code']);
+                })
+                ->latest('id')
+                ->first();
 
         if ($order === null) {
             // Order tidak ditemukan: tetap balas 200 agar Midtrans tidak retry
@@ -86,7 +97,21 @@ class MidtransWebhookController extends Controller
             abort(404);
         }
 
-        $order = Order::query()->where('daily_queue_number', $orderCode)->first();
+        $order = Order::query()
+            ->where(function ($q) use ($orderCode) {
+                $q->where('daily_queue_number', $orderCode)
+                    ->orWhere('order_code', $orderCode);
+            })
+            ->whereDate('created_at', now()->toDateString())
+            ->latest('id')
+            ->first()
+            ?? Order::query()
+                ->where(function ($q) use ($orderCode) {
+                    $q->where('daily_queue_number', $orderCode)
+                        ->orWhere('order_code', $orderCode);
+                })
+                ->latest('id')
+                ->first();
 
         if ($order === null) {
             throw new NotFoundHttpException('Pesanan tidak ditemukan.');

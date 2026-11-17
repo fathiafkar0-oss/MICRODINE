@@ -1,5 +1,5 @@
-import { router } from '@inertiajs/react';
-import { Percent, Plus, QrCode, Store, Timer, UserCog } from 'lucide-react';
+import { router, usePage } from '@inertiajs/react';
+import { Percent, Plus, QrCode, Store, Timer, Trash2, UserCog } from 'lucide-react';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 
@@ -12,6 +12,7 @@ import Toggle from '@/Components/UI/Toggle';
 import { restaurant as mockRestaurant } from '@/Data/mock/restaurant';
 import { staff as mockStaff } from '@/Data/mock/staff';
 import AdminLayout from '@/Layouts/AdminLayout';
+import StaffFormModal from '@/Pages/Admin/Partials/StaffFormModal';
 import { cx, initials } from '@/Utils/classNames';
 
 const ROLE_TONE = { admin: 'gold', dapur: 'warn', kasir: 'info' };
@@ -21,8 +22,11 @@ const ROLE_TONE = { admin: 'gold', dapur: 'warn', kasir: 'info' };
  * Route: GET /admin/pengaturan · Backend: PUT /admin/pengaturan
  */
 export default function AdminSettings({ restaurant = mockRestaurant, staff = Object.values(mockStaff), payment = { provider: 'Midtrans', mode: 'sandbox' } }) {
+    const { auth } = usePage().props;
     const [form, setForm] = useState({ ...restaurant, taxPercent: Math.round(restaurant.taxRate * 100) });
     const [saving, setSaving] = useState(false);
+    const [showStaffModal, setShowStaffModal] = useState(false);
+    const [deletingId, setDeletingId] = useState(null);
     const set = (key) => (value) => setForm((prev) => ({ ...prev, [key]: value }));
 
     const save = (event) => {
@@ -43,6 +47,15 @@ export default function AdminSettings({ restaurant = mockRestaurant, staff = Obj
             },
             { onFinish: () => setSaving(false) },
         );
+    };
+
+    const deleteStaff = (person) => {
+        if (!confirm(`Hapus akun staf "${person.name}"?`)) return;
+        setDeletingId(person.id);
+        router.delete(`/admin/pengaturan/staf/${person.id}`, {
+            preserveScroll: true,
+            onFinish: () => setDeletingId(null),
+        });
     };
 
     return (
@@ -109,7 +122,7 @@ export default function AdminSettings({ restaurant = mockRestaurant, staff = Obj
                         icon={UserCog}
                         title="Akun staf"
                         action={
-                            <Button size="sm" variant="outline" onClick={() => toast('Form tambah akun dibuat di fase backend')}>
+                            <Button type="button" size="sm" variant="outline" onClick={() => setShowStaffModal(true)}>
                                 <Plus className="h-4 w-4" aria-hidden="true" />
                                 Tambah Akun
                             </Button>
@@ -120,17 +133,34 @@ export default function AdminSettings({ restaurant = mockRestaurant, staff = Obj
                             <li key={person.id} className="flex items-center gap-3 py-3">
                                 <span className="grid h-10 w-10 place-items-center rounded-full bg-gold-soft text-sm font-bold text-obsidian">{initials(person.name)}</span>
                                 <div className="flex-1">
-                                    <p className="font-bold">{person.name}</p>
-                                    <p className="text-xs text-faint">{person.shift}</p>
+                                    <p className="font-bold text-navy">{person.name}</p>
+                                    <p className="text-xs text-faint">
+                                        {person.username ? `@${person.username}` : person.shift ?? 'Staf'}
+                                    </p>
                                 </div>
-                                <Badge tone={ROLE_TONE[person.role] ?? 'info'} className="capitalize">
-                                    {person.role}
-                                </Badge>
+                                <div className="flex items-center gap-2">
+                                    <Badge tone={ROLE_TONE[person.role] ?? 'info'} className="capitalize">
+                                        {person.role}
+                                    </Badge>
+                                    {auth?.user?.id !== person.id && (
+                                        <button
+                                            type="button"
+                                            aria-label={`Hapus staf ${person.name}`}
+                                            onClick={() => deleteStaff(person)}
+                                            disabled={deletingId === person.id}
+                                            className="grid h-8 w-8 place-items-center rounded-lg text-faint transition hover:bg-danger-tint hover:text-danger active:scale-95 disabled:opacity-40"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </button>
+                                    )}
+                                </div>
                             </li>
                         ))}
                     </ul>
                 </Card>
             </form>
+
+            <StaffFormModal open={showStaffModal} onClose={() => setShowStaffModal(false)} />
         </AdminLayout>
     );
 }

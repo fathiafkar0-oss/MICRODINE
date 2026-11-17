@@ -30,7 +30,12 @@ ENV VITE_REVERB_APP_KEY=$VITE_REVERB_APP_KEY \
 RUN npm run build
 
 # ---------------------------------------------------------------- Stage 2: aplikasi PHP
-FROM php:8.3-fpm-bookworm AS app
+# Pakai PHP 8.4 (bukan 8.3) karena composer.lock di repo ini sudah terkunci
+# ke versi Symfony yang mensyaratkan php >=8.4.1 — composer.json menulis
+# "php": "^8.3" (artinya >=8.3, bukan dibatasi ke 8.3 saja), jadi versi paket
+# yang ter-resolve mengikuti PHP sungguhan yang dipakai developer (8.4 lewat
+# Herd), bukan versi minimum di composer.json.
+FROM php:8.4-fpm-bookworm AS app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         nginx supervisor libpq-dev libzip-dev zip unzip git gettext-base \
